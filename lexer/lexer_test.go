@@ -50,15 +50,19 @@ func Test_lexer_readChar(t *testing.T) {
 }
 
 func Test_lexer_NextToken(t *testing.T) {
-	input := `abc xyz`
+	input := `abc
+xy z
+`
 	l := Lex(input)
 
 	tests := []struct {
-		wantTyp tokenType
-		wantVal string
+		wantTyp  tokenType
+		wantVal  string
+		wantLine int
 	}{
-		{Identifier, "abc"},
-		{Identifier, "xyz"},
+		{Identifier, "abc", 1},
+		{Identifier, "xy", 2},
+		{Identifier, "z", 2},
 	}
 	for i, tt := range tests {
 		got := l.NextToken()
@@ -67,6 +71,9 @@ func Test_lexer_NextToken(t *testing.T) {
 		}
 		if got.val != tt.wantVal {
 			t.Errorf("case%d lexer.NextToken().val = %v, want %v", i+1, got.val, tt.wantVal)
+		}
+		if got.line != tt.wantLine {
+			t.Errorf("case%d lexer.NextToken().line = %v, want %v", i+1, got.line, tt.wantLine)
 		}
 	}
 	var (

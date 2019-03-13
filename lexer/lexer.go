@@ -118,17 +118,19 @@ func lexSpace(l *lexer) stateFn {
 }
 
 func isSpace(r rune) bool {
-	return r == ' ' || r == '\t'
+	return r == ' ' || r == '\t' || r == '\n' || r == '\r'
 }
 
 func lexIdentifier(l *lexer) stateFn {
 	begin := l.position
+	line := l.line
 	for isAlphaNumeric(l.char) {
 		l.advance()
 	}
 	l.emit(token{
-		typ: Identifier,
-		val: l.input[begin:l.position],
+		typ:  Identifier,
+		val:  l.input[begin:l.position],
+		line: line,
 	})
 	return lexFn
 }

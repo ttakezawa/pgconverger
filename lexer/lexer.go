@@ -5,14 +5,14 @@ import (
 	"unicode/utf8"
 )
 
-type tokenType int
+type tokenType string
 
 const (
-	Illegal tokenType = iota
-	EOF
-	Space
-	Create
-	Identifier
+	Illegal    tokenType = "Illegal"
+	EOF        tokenType = "EOF"
+	Space      tokenType = "Space"
+	Create     tokenType = "Create"
+	Identifier tokenType = "Identifier"
 )
 
 type token struct {

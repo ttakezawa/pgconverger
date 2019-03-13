@@ -5,11 +5,13 @@ import (
 	"unicode/utf8"
 )
 
-type tokenType string
+type tokenType int
 
 const (
-	tokenError tokenType = "error"
-	tokenEOF   tokenType = "eof"
+	Illegal tokenType = iota
+	EOF
+	Create
+	Identifier
 )
 
 type token struct {
@@ -43,6 +45,7 @@ func newLexer(input string) *lexer {
 
 func Lex(input string) *lexer {
 	l := newLexer(input)
+	l.advance()
 	go l.run()
 	return l
 }
@@ -56,6 +59,8 @@ func (l *lexer) run() {
 
 func (l *lexer) advance() {
 	if l.readPosition >= len(l.input) {
+		l.position++
+		l.readPosition++
 		l.char = eof
 		return
 	}
@@ -85,18 +90,47 @@ func (l *lexer) NextToken() token {
 }
 
 func lexText(l *lexer) stateFn {
-	peek := l.peekChar()
 	switch {
-	case isAlphaNumeric(peek):
+	case isSpace(l.char):
+		return lexSpace
+	case isAlphaNumeric(l.char):
 		return lexIdentifier
-	default:
-		// TODO: IMPLEMENT
+	case l.char == eof:
 		return nil
+	default:
+		return lexIllegal
 	}
 }
 
+func lexIllegal(l *lexer) stateFn {
+	l.emit(token{
+		typ: Illegal,
+		val: string(l.char),
+	})
+	return nil
+}
+
+func lexSpace(l *lexer) stateFn {
+	for isSpace(l.char) {
+		l.advance()
+	}
+	return lexText
+}
+
+func isSpace(r rune) bool {
+	return r == ' ' || r == '\t'
+}
+
 func lexIdentifier(l *lexer) stateFn {
-	return nil // TODO: IMPLEMENT
+	begin := l.position
+	for isAlphaNumeric(l.char) {
+		l.advance()
+	}
+	l.emit(token{
+		typ: Identifier,
+		val: l.input[begin:l.position],
+	})
+	return lexText
 }
 
 func isAlphaNumeric(r rune) bool {

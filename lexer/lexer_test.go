@@ -2,6 +2,7 @@ package lexer
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 )
 
@@ -45,5 +46,34 @@ func Test_lexer_readChar(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func Test_lexer_NextToken(t *testing.T) {
+	input := `abc xyz`
+	l := Lex(input)
+
+	tests := []struct {
+		wantTyp tokenType
+		wantVal string
+	}{
+		{Identifier, "abc"},
+		{Identifier, "xyz"},
+	}
+	for i, tt := range tests {
+		got := l.NextToken()
+		if got.typ != tt.wantTyp {
+			t.Errorf("case%d lexer.NextToken().typ = %v, want %v", i+1, got.typ, tt.wantTyp)
+		}
+		if got.val != tt.wantVal {
+			t.Errorf("case%d lexer.NextToken().val = %v, want %v", i+1, got.val, tt.wantVal)
+		}
+	}
+	var (
+		got  = l.NextToken()
+		want = token{}
+	)
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("lexer.NextToken() = %v, want %v", got, want)
 	}
 }

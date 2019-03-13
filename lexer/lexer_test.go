@@ -81,6 +81,6 @@ xy z
 		want = token{}
 	)
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("lexer.NextToken() = %v, want %v", got, want)
+		t.Errorf("lexer.NextToken() = %#v, want %#v", got, want)
 	}
 }

@@ -10,6 +10,7 @@ type tokenType int
 const (
 	Illegal tokenType = iota
 	EOF
+	Space
 	Create
 	Identifier
 )
@@ -18,7 +19,6 @@ type token struct {
 	typ  tokenType
 	val  string
 	line int
-	col  int
 }
 
 const eof = -1
@@ -31,15 +31,20 @@ type lexer struct {
 	readPosition int
 	line         int
 	char         rune
-	tokens       chan token
-	state        stateFn
+
+	startPosition int
+	startLine     int
+
+	tokens chan token
+	state  stateFn
 }
 
 func newLexer(input string) *lexer {
 	return &lexer{
-		input:  input,
-		tokens: make(chan token),
-		line:   1,
+		input:     input,
+		tokens:    make(chan token),
+		line:      1,
+		startLine: 1,
 	}
 }
 
@@ -81,8 +86,17 @@ func (l *lexer) peekChar() rune {
 	return r
 }
 
-func (l *lexer) emit(t token) {
-	l.tokens <- t
+func (l *lexer) emit(typ tokenType) {
+	// ignore Space
+	if typ != Space {
+		l.tokens <- token{
+			typ:  typ,
+			val:  l.input[l.startPosition:l.position],
+			line: l.startLine,
+		}
+	}
+	l.startPosition = l.position
+	l.startLine = l.line
 }
 
 func (l *lexer) NextToken() token {
@@ -103,10 +117,7 @@ func lexFn(l *lexer) stateFn {
 }
 
 func lexIllegal(l *lexer) stateFn {
-	l.emit(token{
-		typ: Illegal,
-		val: string(l.char),
-	})
+	l.emit(Illegal)
 	return nil
 }
 
@@ -114,6 +125,7 @@ func lexSpace(l *lexer) stateFn {
 	for isSpace(l.char) {
 		l.advance()
 	}
+	l.emit(Space)
 	return lexFn
 }
 
@@ -122,16 +134,10 @@ func isSpace(r rune) bool {
 }
 
 func lexIdentifier(l *lexer) stateFn {
-	begin := l.position
-	line := l.line
 	for isAlphaNumeric(l.char) {
 		l.advance()
 	}
-	l.emit(token{
-		typ:  Identifier,
-		val:  l.input[begin:l.position],
-		line: line,
-	})
+	l.emit(Identifier)
 	return lexFn
 }
 

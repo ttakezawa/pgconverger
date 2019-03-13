@@ -51,7 +51,7 @@ func Lex(input string) *lexer {
 }
 
 func (l *lexer) run() {
-	for l.state = lexText; l.state != nil; {
+	for l.state = lexFn; l.state != nil; {
 		l.state = l.state(l)
 	}
 	close(l.tokens)
@@ -89,7 +89,7 @@ func (l *lexer) NextToken() token {
 	return <-l.tokens
 }
 
-func lexText(l *lexer) stateFn {
+func lexFn(l *lexer) stateFn {
 	switch {
 	case isSpace(l.char):
 		return lexSpace
@@ -114,7 +114,7 @@ func lexSpace(l *lexer) stateFn {
 	for isSpace(l.char) {
 		l.advance()
 	}
-	return lexText
+	return lexFn
 }
 
 func isSpace(r rune) bool {
@@ -130,7 +130,7 @@ func lexIdentifier(l *lexer) stateFn {
 		typ: Identifier,
 		val: l.input[begin:l.position],
 	})
-	return lexText
+	return lexFn
 }
 
 func isAlphaNumeric(r rune) bool {

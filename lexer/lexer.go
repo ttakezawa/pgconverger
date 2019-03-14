@@ -11,8 +11,8 @@ const (
 	Illegal    tokenType = "Illegal"
 	EOF        tokenType = "EOF"
 	Space      tokenType = "Space"
-	Create     tokenType = "Create"
 	Identifier tokenType = "Identifier"
+	String     tokenType = "String"
 )
 
 type token struct {
@@ -104,15 +104,22 @@ func (l *lexer) NextToken() token {
 }
 
 func lexFn(l *lexer) stateFn {
-	switch {
-	case isSpace(l.char):
-		return lexSpace
-	case isIdentifierStart(l.char):
-		return lexIdentifier
-	case l.char == eof:
+	switch l.char {
+	case '\'':
+		return lexString
+
+	case eof:
 		return nil
+
 	default:
-		return lexIllegal
+		switch {
+		case isSpace(l.char):
+			return lexSpace
+		case isIdentifierStart(l.char):
+			return lexIdentifier
+		default:
+			return lexIllegal
+		}
 	}
 }
 
@@ -151,4 +158,33 @@ func isIdentifierStart(r rune) bool {
 
 func isIdentifierCont(r rune) bool {
 	return unicode.IsLetter(r) || r == '_' || unicode.IsDigit(r) || r == '$'
+}
+
+// 'Dianne''s horse' => "Dianne's horse"
+func lexString(l *lexer) stateFn {
+	l.advance()
+Loop:
+	for {
+		switch l.char {
+		case '\'':
+			if l.peekChar() == '\'' {
+				// doubled quote.
+				l.advance()
+				l.advance()
+				continue Loop
+			}
+			l.advance()
+			break Loop
+		case '\\':
+			if l.peekChar() == '\'' {
+				// escapted quote.
+				l.advance()
+			}
+			l.advance()
+			continue Loop
+		}
+		l.advance()
+	}
+	l.emit(String)
+	return lexFn
 }

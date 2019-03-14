@@ -51,7 +51,7 @@ func Test_lexer_readChar(t *testing.T) {
 
 func Test_lexer_NextToken(t *testing.T) {
 	input := `abc
-xy z
+x f1 abc$2
 `
 	l := Lex(input)
 
@@ -61,8 +61,9 @@ xy z
 		wantLine int
 	}{
 		{Identifier, "abc", 1},
-		{Identifier, "xy", 2},
-		{Identifier, "z", 2},
+		{Identifier, "x", 2},
+		{Identifier, "f1", 2},
+		{Identifier, "abc$2", 2},
 	}
 	for i, tt := range tests {
 		got := l.NextToken()

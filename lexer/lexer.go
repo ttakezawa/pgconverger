@@ -107,7 +107,7 @@ func lexFn(l *lexer) stateFn {
 	switch {
 	case isSpace(l.char):
 		return lexSpace
-	case isAlphaNumeric(l.char):
+	case isIdentifierStart(l.char):
 		return lexIdentifier
 	case l.char == eof:
 		return nil
@@ -133,14 +133,22 @@ func isSpace(r rune) bool {
 	return r == ' ' || r == '\t' || r == '\n' || r == '\r'
 }
 
+// ident_start		[A-Za-z\200-\377_]
+// ident_cont		[A-Za-z\200-\377_0-9\$]
+// identifier		{ident_start}{ident_cont}*
 func lexIdentifier(l *lexer) stateFn {
-	for isAlphaNumeric(l.char) {
+	l.advance()
+	for isIdentifierCont(l.char) {
 		l.advance()
 	}
 	l.emit(Identifier)
 	return lexFn
 }
 
-func isAlphaNumeric(r rune) bool {
-	return r == '_' || unicode.IsLetter(r) || unicode.IsDigit(r)
+func isIdentifierStart(r rune) bool {
+	return unicode.IsLetter(r) || r == '_'
+}
+
+func isIdentifierCont(r rune) bool {
+	return unicode.IsLetter(r) || r == '_' || unicode.IsDigit(r) || r == '$'
 }

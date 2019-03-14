@@ -13,6 +13,7 @@ const (
 	Space      tokenType = "Space"
 	Identifier tokenType = "Identifier"
 	String     tokenType = "String"
+	Number     tokenType = "Number"
 )
 
 type token struct {
@@ -105,16 +106,18 @@ func (l *lexer) NextToken() token {
 
 func lexFn(l *lexer) stateFn {
 	switch l.char {
-	case '\'':
-		return lexString
 	case eof:
 		return lexEOF
+	case '\'':
+		return lexString
 	default:
 		switch {
 		case isSpace(l.char):
 			return lexSpace
 		case isIdentifierStart(l.char):
 			return lexIdentifier
+		case isNumberStart(l.char):
+			return lexNumber
 		default:
 			return lexIllegal
 		}
@@ -164,6 +167,7 @@ func isIdentifierCont(r rune) bool {
 }
 
 // 'Dianne''s horse' => "Dianne's horse"
+// 'foo'\n'bar' => 'foobar' -- Unsupported
 func lexString(l *lexer) stateFn {
 	l.advance()
 Loop:
@@ -190,4 +194,46 @@ Loop:
 	}
 	l.emit(String)
 	return lexFn
+}
+
+// 42
+// 3.5
+// 4.
+// .001
+// 5e2      -- Unsupported
+// 1.925e-3 -- Unsupported
+func lexNumber(l *lexer) stateFn {
+Loop:
+	for {
+		l.advance()
+		switch {
+		case unicode.IsDigit(l.char):
+			continue
+		case l.char == '.':
+			return lexNumberFraction
+		default:
+			break Loop
+		}
+	}
+	l.emit(Number)
+	return lexFn
+}
+
+func lexNumberFraction(l *lexer) stateFn {
+Loop:
+	for {
+		l.advance()
+		switch {
+		case unicode.IsDigit(l.char):
+			continue
+		default:
+			break Loop
+		}
+	}
+	l.emit(Number)
+	return lexFn
+}
+
+func isNumberStart(r rune) bool {
+	return unicode.IsDigit(r) || r == '.'
 }

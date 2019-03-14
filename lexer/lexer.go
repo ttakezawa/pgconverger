@@ -107,10 +107,8 @@ func lexFn(l *lexer) stateFn {
 	switch l.char {
 	case '\'':
 		return lexString
-
 	case eof:
-		return nil
-
+		return lexEOF
 	default:
 		switch {
 		case isSpace(l.char):
@@ -121,6 +119,11 @@ func lexFn(l *lexer) stateFn {
 			return lexIllegal
 		}
 	}
+}
+
+func lexEOF(l *lexer) stateFn {
+	l.emit(EOF)
+	return nil
 }
 
 func lexIllegal(l *lexer) stateFn {

@@ -2,7 +2,6 @@ package lexer
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 )
 
@@ -67,6 +66,7 @@ x f1 abc$2
 		{Identifier, "abc$2", 2},
 		{String, "'aaaa''bbbb'", 3},
 		{String, "'a\\'b'", 3},
+		{EOF, "", 4},
 	}
 	for i, tt := range tests {
 		got := l.NextToken()
@@ -79,12 +79,5 @@ x f1 abc$2
 		if got.line != tt.wantLine {
 			t.Errorf("case%d lexer.NextToken().line = %v, want %v", i+1, got.line, tt.wantLine)
 		}
-	}
-	var (
-		got  = l.NextToken()
-		want = token{}
-	)
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("lexer.NextToken() = %#v, want %#v", got, want)
 	}
 }

@@ -164,7 +164,9 @@ func isIdentifierCont(r rune) bool {
 }
 
 // 'Dianne''s horse' => "Dianne's horse"
-// 'foo'\n'bar' => 'foobar' -- Not implemented
+// Not implemented: 'foo'\n'bar' => 'foobar'
+// Not implemented: $$Dianne's horse$$
+// Not implemented: $SomeTag$Dianne's horse$SomeTag$
 func lexString(l *lexer) stateFn {
 	l.advance()
 Loop:
@@ -197,8 +199,8 @@ Loop:
 // 3.5
 // 4.
 // .001
-// 5e2      -- Not implemented
-// 1.925e-3 -- Not implemented
+// Not implemented: 5e2
+// Not implemented: 1.925e-3
 func lexNumber(l *lexer) stateFn {
 Loop:
 	for {

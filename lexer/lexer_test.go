@@ -53,6 +53,9 @@ func Test_lexer_NextToken(t *testing.T) {
 x f1 abc$2
 'aaaa''bbbb' 'a\'b'
 1.5 .82
+-- aaaa
+/* xxx /* aaaa */
+yyy */
 `
 	l := Lex(input)
 
@@ -69,7 +72,7 @@ x f1 abc$2
 		{String, "'a\\'b'", 3},
 		{Number, "1.5", 4},
 		{Number, ".82", 4},
-		{EOF, "", 5},
+		{EOF, "", 8},
 	}
 	for i, tt := range tests {
 		got := l.NextToken()

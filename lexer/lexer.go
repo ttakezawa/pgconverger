@@ -11,6 +11,7 @@ const (
 	Illegal    tokenType = "Illegal"
 	EOF        tokenType = "EOF"
 	Space      tokenType = "Space"
+	Comment    tokenType = "Comment"
 	Identifier tokenType = "Identifier"
 	String     tokenType = "String"
 	Number     tokenType = "Number"
@@ -88,8 +89,10 @@ func (l *lexer) peekChar() rune {
 }
 
 func (l *lexer) emit(typ tokenType) {
-	// ignore Space
-	if typ != Space {
+	switch typ {
+	case Space, Comment:
+		// ignore Space and Comment
+	default:
 		l.tokens <- token{
 			typ:  typ,
 			val:  l.input[l.startPosition:l.position],
@@ -114,6 +117,10 @@ func lexFn(l *lexer) stateFn {
 		return lexNumber
 	case l.char == '\'':
 		return lexString
+	case l.char == '-' && l.peekChar() == '-':
+		return lexCommentLine
+	case l.char == '/' && l.peekChar() == '*':
+		return lexCommentBlock
 	case l.char == eof:
 		return lexEOF
 	default:
@@ -235,4 +242,52 @@ Loop:
 
 func isNumberStart(r rune) bool {
 	return unicode.IsDigit(r) || r == '.'
+}
+
+// -- This is a standard SQL comment
+func lexCommentLine(l *lexer) stateFn {
+	l.advance()
+	l.advance()
+Loop:
+	for l.char != eof {
+		if l.char == '\n' {
+			l.advance()
+			break Loop
+		}
+		l.advance()
+	}
+	l.emit(Comment)
+	return lexFn
+}
+
+// /* multiline comment
+//  * with nesting: /* nested block comment */
+//  */
+func lexCommentBlock(l *lexer) stateFn {
+	l.advance()
+	l.advance()
+	nestCount := 0
+Loop:
+	for {
+		switch {
+		case l.char == eof:
+			return lexIllegal
+		case l.char == '/' && l.peekChar() == '*':
+			nestCount++
+			l.advance()
+		case l.char == '*' && l.peekChar() == '/':
+			if nestCount == 0 {
+				l.advance()
+				l.advance()
+				break Loop
+			}
+			nestCount--
+			l.advance()
+			l.advance()
+		default:
+			l.advance()
+		}
+	}
+	l.emit(Comment)
+	return lexFn
 }

@@ -105,22 +105,19 @@ func (l *lexer) NextToken() token {
 }
 
 func lexFn(l *lexer) stateFn {
-	switch l.char {
-	case eof:
-		return lexEOF
-	case '\'':
+	switch {
+	case isSpace(l.char):
+		return lexSpace
+	case isIdentifierStart(l.char):
+		return lexIdentifier
+	case isNumberStart(l.char):
+		return lexNumber
+	case l.char == '\'':
 		return lexString
+	case l.char == eof:
+		return lexEOF
 	default:
-		switch {
-		case isSpace(l.char):
-			return lexSpace
-		case isIdentifierStart(l.char):
-			return lexIdentifier
-		case isNumberStart(l.char):
-			return lexNumber
-		default:
-			return lexIllegal
-		}
+		return lexIllegal
 	}
 }
 
@@ -167,7 +164,7 @@ func isIdentifierCont(r rune) bool {
 }
 
 // 'Dianne''s horse' => "Dianne's horse"
-// 'foo'\n'bar' => 'foobar' -- Unsupported
+// 'foo'\n'bar' => 'foobar' -- Not implemented
 func lexString(l *lexer) stateFn {
 	l.advance()
 Loop:
@@ -200,8 +197,8 @@ Loop:
 // 3.5
 // 4.
 // .001
-// 5e2      -- Unsupported
-// 1.925e-3 -- Unsupported
+// 5e2      -- Not implemented
+// 1.925e-3 -- Not implemented
 func lexNumber(l *lexer) stateFn {
 Loop:
 	for {

@@ -179,6 +179,9 @@ func lexString(l *lexer) stateFn {
 Loop:
 	for {
 		switch l.char {
+		case eof:
+			l.emit(Illegal)
+			return nil
 		case '\'':
 			if l.peekChar() == '\'' {
 				// doubled quote.

@@ -49,41 +49,59 @@ func Test_lexer_readChar(t *testing.T) {
 }
 
 func Test_lexer_NextToken(t *testing.T) {
-	input := `abc
+	type want struct {
+		typ  tokenType
+		val  string
+		line int
+	}
+
+	tests := []struct {
+		input string
+		wants []want
+	}{
+		{
+			input: `abc
 x f1 abc$2
-'aaaa''bbbb' 'a\'b'
+'aaaa''bbbb' 'a\'b' 'ab
+cd'
 1.5 .82
 -- aaaa
 /* xxx /* aaaa */
 yyy */
-`
-	l := Lex(input)
-
-	tests := []struct {
-		wantTyp  tokenType
-		wantVal  string
-		wantLine int
-	}{
-		{Identifier, "abc", 1},
-		{Identifier, "x", 2},
-		{Identifier, "f1", 2},
-		{Identifier, "abc$2", 2},
-		{String, "'aaaa''bbbb'", 3},
-		{String, "'a\\'b'", 3},
-		{Number, "1.5", 4},
-		{Number, ".82", 4},
-		{EOF, "", 8},
+`,
+			wants: []want{
+				{Identifier, "abc", 1},
+				{Identifier, "x", 2},
+				{Identifier, "f1", 2},
+				{Identifier, "abc$2", 2},
+				{String, "'aaaa''bbbb'", 3},
+				{String, "'a\\'b'", 3},
+				{String, "'ab\ncd'", 3},
+				{Number, "1.5", 5},
+				{Number, ".82", 5},
+				{EOF, "", 9},
+			},
+		},
+		{
+			input: `'a`,
+			wants: []want{
+				{Illegal, "'a", 1},
+			},
+		},
 	}
 	for i, tt := range tests {
-		got := l.NextToken()
-		if got.typ != tt.wantTyp {
-			t.Errorf("case%d lexer.NextToken().typ = %v, want %v", i+1, got.typ, tt.wantTyp)
-		}
-		if got.val != tt.wantVal {
-			t.Errorf("case%d lexer.NextToken().val = %v, want %v", i+1, got.val, tt.wantVal)
-		}
-		if got.line != tt.wantLine {
-			t.Errorf("case%d lexer.NextToken().line = %v, want %v", i+1, got.line, tt.wantLine)
+		l := Lex(tt.input)
+		for j, want := range tt.wants {
+			got := l.NextToken()
+			if got.typ != want.typ {
+				t.Errorf("case%d-%d lexer.NextToken().typ = %v, want %v", i+1, j+i, got.typ, want.typ)
+			}
+			if got.val != want.val {
+				t.Errorf("case%d-%d lexer.NextToken().val = %v, want %v", i+1, j+i, got.val, want.val)
+			}
+			if got.line != want.line {
+				t.Errorf("case%d-%d lexer.NextToken().line = %v, want %v", i+1, j+i, got.line, want.line)
+			}
 		}
 	}
 }

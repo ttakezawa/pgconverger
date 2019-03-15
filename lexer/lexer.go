@@ -1,6 +1,7 @@
 package lexer
 
 import (
+	"strings"
 	"unicode"
 	"unicode/utf8"
 )
@@ -19,12 +20,61 @@ const (
 	Comma      tokenType = "Comma"
 	LParen     tokenType = "LParen"
 	RParen     tokenType = "RParen"
+
+	Create    tokenType = "Create"
+	Table     tokenType = "Table"
+	Bigint    tokenType = "Bigint"
+	Not       tokenType = "Not"
+	Null      tokenType = "Null"
+	Character tokenType = "Character"
+	Varying   tokenType = "Varying"
+	Alter     tokenType = "Alter"
+	Owner     tokenType = "Owner"
+	To        tokenType = "To"
+	Sequence  tokenType = "Sequence"
+	Start     tokenType = "Start"
+	With      tokenType = "With"
+	Increment tokenType = "Increment"
+	By        tokenType = "By"
+	No        tokenType = "No"
+	Minvalue  tokenType = "Minvalue"
+	Maxvalue  tokenType = "Maxvalue"
+	Cache     tokenType = "Cache"
 )
+
+var keywords = map[string]tokenType{
+	"CREATE":    Create,
+	"TABLE":     Table,
+	"BIGINT":    Bigint,
+	"NOT":       Not,
+	"NULL":      Null,
+	"CHARACTER": Character,
+	"VARYING":   Varying,
+	"ALTER":     Alter,
+	"OWNER":     Owner,
+	"TO":        To,
+	"SEQUENCE":  Sequence,
+	"START":     Start,
+	"WITH":      With,
+	"INCREMENT": Increment,
+	"BY":        By,
+	"NO":        No,
+	"MINVALUE":  Minvalue,
+	"MAXVALUE":  Maxvalue,
+	"CACHE":     Cache,
+}
 
 type token struct {
 	typ  tokenType
 	val  string
 	line int
+}
+
+func LookupIdent(ident string) tokenType {
+	if keyword, ok := keywords[strings.ToUpper(ident)]; ok {
+		return keyword
+	}
+	return Identifier
 }
 
 const eof = -1
@@ -92,6 +142,10 @@ func (l *lexer) peekChar() rune {
 	return r
 }
 
+func (l *lexer) word() string {
+	return l.input[l.startPosition:l.position]
+}
+
 func (l *lexer) emit(typ tokenType) {
 	switch typ {
 	case Space, Comment:
@@ -99,7 +153,7 @@ func (l *lexer) emit(typ tokenType) {
 	default:
 		l.tokens <- token{
 			typ:  typ,
-			val:  l.input[l.startPosition:l.position],
+			val:  l.word(),
 			line: l.startLine,
 		}
 	}
@@ -176,7 +230,7 @@ func lexIdentifier(l *lexer) stateFn {
 	for isIdentifierCont(l.char) {
 		l.advance()
 	}
-	l.emit(Identifier)
+	l.emit(LookupIdent(l.word()))
 	return lexFn
 }
 

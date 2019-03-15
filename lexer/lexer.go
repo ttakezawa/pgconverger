@@ -15,6 +15,10 @@ const (
 	Identifier tokenType = "Identifier"
 	String     tokenType = "String"
 	Number     tokenType = "Number"
+	Semicolon  tokenType = "Semicolon"
+	Comma      tokenType = "Comma"
+	LParen     tokenType = "LParen"
+	RParen     tokenType = "RParen"
 )
 
 type token struct {
@@ -117,6 +121,18 @@ func lexFn(l *lexer) stateFn {
 		return lexNumber
 	case l.char == '\'':
 		return lexString
+	case l.char == ';':
+		l.advance()
+		l.emit(Semicolon)
+	case l.char == ',':
+		l.advance()
+		l.emit(Comma)
+	case l.char == '(':
+		l.advance()
+		l.emit(LParen)
+	case l.char == ')':
+		l.advance()
+		l.emit(RParen)
 	case l.char == '-' && l.peekChar() == '-':
 		return lexCommentLine
 	case l.char == '/' && l.peekChar() == '*':
@@ -126,6 +142,8 @@ func lexFn(l *lexer) stateFn {
 	default:
 		return lexIllegal
 	}
+
+	return lexFn
 }
 
 func lexEOF(l *lexer) stateFn {

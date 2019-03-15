@@ -174,6 +174,8 @@ func isIdentifierCont(r rune) bool {
 // Not implemented: 'foo'\n'bar' => 'foobar'
 // Not implemented: $$Dianne's horse$$
 // Not implemented: $SomeTag$Dianne's horse$SomeTag$
+// Not implemented: E'foo' (String Constants With C-Style Escapes)
+// Not implemented: U&'d\0061t\+000061' (String Constants With Unicode Escapes)
 func lexString(l *lexer) stateFn {
 	l.advance()
 Loop:

@@ -9,9 +9,9 @@ import (
 
 const eof = -1
 
-type stateFn func(*lexer) stateFn
+type stateFn func(*Lexer) stateFn
 
-type lexer struct {
+type Lexer struct {
 	input        string
 	position     int
 	readPosition int
@@ -25,8 +25,8 @@ type lexer struct {
 	state  stateFn
 }
 
-func newLexer(input string) *lexer {
-	return &lexer{
+func newLexer(input string) *Lexer {
+	return &Lexer{
 		input:     input,
 		tokens:    make(chan token.Token),
 		line:      1,
@@ -34,21 +34,21 @@ func newLexer(input string) *lexer {
 	}
 }
 
-func Lex(input string) *lexer {
+func Lex(input string) *Lexer {
 	l := newLexer(input)
 	l.advance()
 	go l.run()
 	return l
 }
 
-func (l *lexer) run() {
+func (l *Lexer) run() {
 	for l.state = lexFn; l.state != nil; {
 		l.state = l.state(l)
 	}
 	close(l.tokens)
 }
 
-func (l *lexer) advance() {
+func (l *Lexer) advance() {
 	if l.readPosition >= len(l.input) {
 		l.position++
 		l.readPosition++
@@ -64,7 +64,7 @@ func (l *lexer) advance() {
 	}
 }
 
-func (l *lexer) peekChar() rune {
+func (l *Lexer) peekChar() rune {
 	if l.readPosition >= len(l.input) {
 		return eof
 	}
@@ -72,11 +72,11 @@ func (l *lexer) peekChar() rune {
 	return r
 }
 
-func (l *lexer) word() string {
+func (l *Lexer) word() string {
 	return l.input[l.startPosition:l.position]
 }
 
-func (l *lexer) emit(typ token.TokenType) {
+func (l *Lexer) emit(typ token.TokenType) {
 	switch typ {
 	case token.Space, token.Comment:
 		// ignore Space and Comment
@@ -91,11 +91,11 @@ func (l *lexer) emit(typ token.TokenType) {
 	l.startLine = l.line
 }
 
-func (l *lexer) NextToken() token.Token {
+func (l *Lexer) NextToken() token.Token {
 	return <-l.tokens
 }
 
-func lexFn(l *lexer) stateFn {
+func lexFn(l *Lexer) stateFn {
 	switch {
 	case isSpace(l.char):
 		return lexSpace
@@ -134,17 +134,17 @@ func lexFn(l *lexer) stateFn {
 	return lexFn
 }
 
-func lexEOF(l *lexer) stateFn {
+func lexEOF(l *Lexer) stateFn {
 	l.emit(token.EOF)
 	return nil
 }
 
-func lexIllegal(l *lexer) stateFn {
+func lexIllegal(l *Lexer) stateFn {
 	l.emit(token.Illegal)
 	return nil
 }
 
-func lexSpace(l *lexer) stateFn {
+func lexSpace(l *Lexer) stateFn {
 	for isSpace(l.char) {
 		l.advance()
 	}
@@ -157,7 +157,7 @@ func isSpace(r rune) bool {
 }
 
 // "foobar"
-func lexDoubleQuoteIdentifier(l *lexer) stateFn {
+func lexDoubleQuoteIdentifier(l *Lexer) stateFn {
 	l.advance()
 	for l.char != '"' {
 		l.advance()
@@ -170,7 +170,7 @@ func lexDoubleQuoteIdentifier(l *lexer) stateFn {
 // ident_start		[A-Za-z\200-\377_]
 // ident_cont		[A-Za-z\200-\377_0-9\$]
 // identifier		{ident_start}{ident_cont}*
-func lexIdentifier(l *lexer) stateFn {
+func lexIdentifier(l *Lexer) stateFn {
 	l.advance()
 	for isIdentifierCont(l.char) {
 		l.advance()
@@ -193,7 +193,7 @@ func isIdentifierCont(r rune) bool {
 // Not implemented: $SomeTag$Dianne's horse$SomeTag$
 // Not implemented: E'foo' (String Constants With C-Style Escapes)
 // Not implemented: U&'d\0061t\+000061' (String Constants With Unicode Escapes)
-func lexString(l *lexer) stateFn {
+func lexString(l *Lexer) stateFn {
 	l.advance()
 Loop:
 	for {
@@ -230,7 +230,7 @@ Loop:
 // .001
 // Not implemented: 5e2
 // Not implemented: 1.925e-3
-func lexNumber(l *lexer) stateFn {
+func lexNumber(l *Lexer) stateFn {
 Loop:
 	for {
 		l.advance()
@@ -247,7 +247,7 @@ Loop:
 	return lexFn
 }
 
-func lexNumberFraction(l *lexer) stateFn {
+func lexNumberFraction(l *Lexer) stateFn {
 Loop:
 	for {
 		l.advance()
@@ -267,7 +267,7 @@ func isNumberStart(r rune) bool {
 }
 
 // -- This is a standard SQL comment
-func lexCommentLine(l *lexer) stateFn {
+func lexCommentLine(l *Lexer) stateFn {
 	l.advance()
 	l.advance()
 Loop:
@@ -285,7 +285,7 @@ Loop:
 // /* multiline comment
 //  * with nesting: /* nested block comment */
 //  */
-func lexCommentBlock(l *lexer) stateFn {
+func lexCommentBlock(l *Lexer) stateFn {
 	l.advance()
 	l.advance()
 	nestCount := 0
@@ -314,7 +314,7 @@ Loop:
 	return lexFn
 }
 
-func lexTypecast(l *lexer) stateFn {
+func lexTypecast(l *Lexer) stateFn {
 	l.advance()
 	if l.char != ':' {
 		l.advance()

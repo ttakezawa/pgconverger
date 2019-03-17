@@ -180,13 +180,13 @@ ALTER TABLE ONLY "users" ALTER COLUMN "id" SET DEFAULT "nextval"('"users_id_seq"
 		for j, want := range tt.wants {
 			got := l.NextToken()
 			if got.Typ != want.typ {
-				t.Errorf("case%d-%d lexer.NextToken().typ = %v, want %v", i+1, j+i, got.Typ, want.typ)
+				t.Errorf("case%d-%d Lexer.NextToken().typ = %v, want %v", i+1, j+i, got.Typ, want.typ)
 			}
 			if got.Val != want.val {
-				t.Errorf("case%d-%d lexer.NextToken().val = %q, want %q", i+1, j+i, got.Val, want.val)
+				t.Errorf("case%d-%d Lexer.NextToken().val = %q, want %q", i+1, j+i, got.Val, want.val)
 			}
 			if got.Line != want.line {
-				t.Errorf("case%d-%d lexer.NextToken().line = %v, want %v", i+1, j+i, got.Line, want.line)
+				t.Errorf("case%d-%d Lexer.NextToken().line = %v, want %v", i+1, j+i, got.Line, want.line)
 			}
 		}
 	}

@@ -104,6 +104,8 @@ CREATE SEQUENCE users_id_seq
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
+
+ALTER TABLE ONLY "users" ALTER COLUMN "id" SET DEFAULT "nextval"('"users_id_seq"'::"regclass");
 `,
 			wants: []want{
 				{Create, "CREATE", 2},
@@ -149,10 +151,28 @@ CREATE SEQUENCE users_id_seq
 				{Number, "1", 14},
 				{Semicolon, ";", 14},
 
-				{EOF, "", 15},
+				{Alter, "ALTER", 16},
+				{Table, "TABLE", 16},
+				{Only, "ONLY", 16},
+				{Identifier, `"users"`, 16},
+				{Alter, "ALTER", 16},
+				{Column, "COLUMN", 16},
+				{Identifier, `"id"`, 16},
+				{Set, "SET", 16},
+				{Default, "DEFAULT", 16},
+				{Identifier, `"nextval"`, 16},
+				{LParen, "(", 16},
+				{String, "'\"users_id_seq\"'", 16},
+				{Typecast, "::", 16},
+				{Identifier, `"regclass"`, 16},
+				{RParen, ")", 16},
+				{Semicolon, ";", 16},
+
+				{EOF, "", 17},
 			},
 		},
 	}
+
 	for i, tt := range tests {
 		l := Lex(tt.input)
 		for j, want := range tt.wants {

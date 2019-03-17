@@ -20,6 +20,7 @@ const (
 	Comma      tokenType = "Comma"
 	LParen     tokenType = "LParen"
 	RParen     tokenType = "RParen"
+	Typecast   tokenType = "Typecast"
 
 	Add        tokenType = "Add"
 	Alter      tokenType = "Alter"
@@ -203,6 +204,8 @@ func lexFn(l *lexer) stateFn {
 		return lexNumber
 	case l.char == '\'':
 		return lexString
+	case l.char == ':':
+		return lexTypecast
 	case l.char == ';':
 		l.advance()
 		l.emit(Semicolon)
@@ -405,5 +408,16 @@ Loop:
 		}
 	}
 	l.emit(Comment)
+	return lexFn
+}
+
+func lexTypecast(l *lexer) stateFn {
+	l.advance()
+	if l.char != ':' {
+		l.advance()
+		return lexIllegal
+	}
+	l.advance()
+	l.emit(Typecast)
 	return lexFn
 }

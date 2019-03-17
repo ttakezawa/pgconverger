@@ -141,7 +141,7 @@ func lexEOF(l *Lexer) stateFn {
 
 func lexIllegal(l *Lexer) stateFn {
 	l.emit(token.Illegal)
-	return nil
+	return lexFn
 }
 
 func lexSpace(l *Lexer) stateFn {
@@ -159,10 +159,18 @@ func isSpace(r rune) bool {
 // "foobar"
 func lexDoubleQuoteIdentifier(l *Lexer) stateFn {
 	l.advance()
-	for l.char != '"' {
+Loop:
+	for {
+		switch l.char {
+		case eof:
+			return lexIllegal
+		case '"':
+			l.advance()
+			break Loop
+
+		}
 		l.advance()
 	}
-	l.advance()
 	l.emit(token.Identifier)
 	return lexFn
 }
@@ -199,8 +207,7 @@ Loop:
 	for {
 		switch l.char {
 		case eof:
-			l.emit(token.Illegal)
-			return nil
+			return lexIllegal
 		case '\'':
 			if l.peekChar() == '\'' {
 				// doubled quote.

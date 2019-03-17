@@ -21,47 +21,73 @@ const (
 	LParen     tokenType = "LParen"
 	RParen     tokenType = "RParen"
 
-	Create    tokenType = "Create"
-	Table     tokenType = "Table"
-	Bigint    tokenType = "Bigint"
-	Not       tokenType = "Not"
-	Null      tokenType = "Null"
-	Character tokenType = "Character"
-	Varying   tokenType = "Varying"
-	Alter     tokenType = "Alter"
-	Owner     tokenType = "Owner"
-	To        tokenType = "To"
-	Sequence  tokenType = "Sequence"
-	Start     tokenType = "Start"
-	With      tokenType = "With"
-	Increment tokenType = "Increment"
-	By        tokenType = "By"
-	No        tokenType = "No"
-	Minvalue  tokenType = "Minvalue"
-	Maxvalue  tokenType = "Maxvalue"
-	Cache     tokenType = "Cache"
+	Add        tokenType = "Add"
+	Alter      tokenType = "Alter"
+	Bigint     tokenType = "Bigint"
+	By         tokenType = "By"
+	Cache      tokenType = "Cache"
+	Character  tokenType = "Character"
+	Column     tokenType = "Column"
+	Constraint tokenType = "Constraint"
+	Create     tokenType = "Create"
+	Default    tokenType = "Default"
+	Grant      tokenType = "Grant"
+	Increment  tokenType = "Increment"
+	Index      tokenType = "Index"
+	Insert     tokenType = "Insert"
+	Maxvalue   tokenType = "Maxvalue"
+	Minvalue   tokenType = "Minvalue"
+	No         tokenType = "No"
+	Not        tokenType = "Not"
+	Null       tokenType = "Null"
+	On         tokenType = "On"
+	Only       tokenType = "Only"
+	Owner      tokenType = "Owner"
+	Select     tokenType = "Select"
+	Sequence   tokenType = "Sequence"
+	Set        tokenType = "Set"
+	Start      tokenType = "Start"
+	Table      tokenType = "Table"
+	To         tokenType = "To"
+	Update     tokenType = "Update"
+	Using      tokenType = "Using"
+	Varying    tokenType = "Varying"
+	With       tokenType = "With"
 )
 
 var keywords = map[string]tokenType{
-	"CREATE":    Create,
-	"TABLE":     Table,
-	"BIGINT":    Bigint,
-	"NOT":       Not,
-	"NULL":      Null,
-	"CHARACTER": Character,
-	"VARYING":   Varying,
-	"ALTER":     Alter,
-	"OWNER":     Owner,
-	"TO":        To,
-	"SEQUENCE":  Sequence,
-	"START":     Start,
-	"WITH":      With,
-	"INCREMENT": Increment,
-	"BY":        By,
-	"NO":        No,
-	"MINVALUE":  Minvalue,
-	"MAXVALUE":  Maxvalue,
-	"CACHE":     Cache,
+	"ADD":        Add,
+	"ALTER":      Alter,
+	"BIGINT":     Bigint,
+	"BY":         By,
+	"CACHE":      Cache,
+	"CHARACTER":  Character,
+	"COLUMN":     Column,
+	"CONSTRAINT": Constraint,
+	"CREATE":     Create,
+	"DEFAULT":    Default,
+	"GRANT":      Grant,
+	"INCREMENT":  Increment,
+	"INDEX":      Index,
+	"INSERT":     Insert,
+	"MAXVALUE":   Maxvalue,
+	"MINVALUE":   Minvalue,
+	"NO":         No,
+	"NOT":        Not,
+	"NULL":       Null,
+	"ON":         On,
+	"ONLY":       Only,
+	"OWNER":      Owner,
+	"SELECT":     Select,
+	"SEQUENCE":   Sequence,
+	"SET":        Set,
+	"START":      Start,
+	"TABLE":      Table,
+	"TO":         To,
+	"UPDATE":     Update,
+	"USING":      Using,
+	"VARYING":    Varying,
+	"WITH":       With,
 }
 
 type token struct {

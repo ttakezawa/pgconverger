@@ -1,108 +1,11 @@
 package lexer
 
 import (
-	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/ttakezawa/pgconverger/token"
 )
-
-type tokenType string
-
-const (
-	Illegal    tokenType = "Illegal"
-	EOF        tokenType = "EOF"
-	Space      tokenType = "Space"
-	Comment    tokenType = "Comment"
-	Identifier tokenType = "Identifier"
-	String     tokenType = "String"
-	Number     tokenType = "Number"
-	Semicolon  tokenType = "Semicolon"
-	Comma      tokenType = "Comma"
-	LParen     tokenType = "LParen"
-	RParen     tokenType = "RParen"
-	Typecast   tokenType = "Typecast"
-
-	Add        tokenType = "Add"
-	Alter      tokenType = "Alter"
-	Bigint     tokenType = "Bigint"
-	By         tokenType = "By"
-	Cache      tokenType = "Cache"
-	Character  tokenType = "Character"
-	Column     tokenType = "Column"
-	Constraint tokenType = "Constraint"
-	Create     tokenType = "Create"
-	Default    tokenType = "Default"
-	Grant      tokenType = "Grant"
-	Increment  tokenType = "Increment"
-	Index      tokenType = "Index"
-	Insert     tokenType = "Insert"
-	Maxvalue   tokenType = "Maxvalue"
-	Minvalue   tokenType = "Minvalue"
-	No         tokenType = "No"
-	Not        tokenType = "Not"
-	Null       tokenType = "Null"
-	On         tokenType = "On"
-	Only       tokenType = "Only"
-	Owner      tokenType = "Owner"
-	Select     tokenType = "Select"
-	Sequence   tokenType = "Sequence"
-	Set        tokenType = "Set"
-	Start      tokenType = "Start"
-	Table      tokenType = "Table"
-	To         tokenType = "To"
-	Update     tokenType = "Update"
-	Using      tokenType = "Using"
-	Varying    tokenType = "Varying"
-	With       tokenType = "With"
-)
-
-var keywords = map[string]tokenType{
-	"ADD":        Add,
-	"ALTER":      Alter,
-	"BIGINT":     Bigint,
-	"BY":         By,
-	"CACHE":      Cache,
-	"CHARACTER":  Character,
-	"COLUMN":     Column,
-	"CONSTRAINT": Constraint,
-	"CREATE":     Create,
-	"DEFAULT":    Default,
-	"GRANT":      Grant,
-	"INCREMENT":  Increment,
-	"INDEX":      Index,
-	"INSERT":     Insert,
-	"MAXVALUE":   Maxvalue,
-	"MINVALUE":   Minvalue,
-	"NO":         No,
-	"NOT":        Not,
-	"NULL":       Null,
-	"ON":         On,
-	"ONLY":       Only,
-	"OWNER":      Owner,
-	"SELECT":     Select,
-	"SEQUENCE":   Sequence,
-	"SET":        Set,
-	"START":      Start,
-	"TABLE":      Table,
-	"TO":         To,
-	"UPDATE":     Update,
-	"USING":      Using,
-	"VARYING":    Varying,
-	"WITH":       With,
-}
-
-type token struct {
-	typ  tokenType
-	val  string
-	line int
-}
-
-func LookupIdent(ident string) tokenType {
-	if keyword, ok := keywords[strings.ToUpper(ident)]; ok {
-		return keyword
-	}
-	return Identifier
-}
 
 const eof = -1
 
@@ -118,14 +21,14 @@ type lexer struct {
 	startPosition int
 	startLine     int
 
-	tokens chan token
+	tokens chan token.Token
 	state  stateFn
 }
 
 func newLexer(input string) *lexer {
 	return &lexer{
 		input:     input,
-		tokens:    make(chan token),
+		tokens:    make(chan token.Token),
 		line:      1,
 		startLine: 1,
 	}
@@ -173,22 +76,22 @@ func (l *lexer) word() string {
 	return l.input[l.startPosition:l.position]
 }
 
-func (l *lexer) emit(typ tokenType) {
+func (l *lexer) emit(typ token.TokenType) {
 	switch typ {
-	case Space, Comment:
+	case token.Space, token.Comment:
 		// ignore Space and Comment
 	default:
-		l.tokens <- token{
-			typ:  typ,
-			val:  l.word(),
-			line: l.startLine,
+		l.tokens <- token.Token{
+			Typ:  typ,
+			Val:  l.word(),
+			Line: l.startLine,
 		}
 	}
 	l.startPosition = l.position
 	l.startLine = l.line
 }
 
-func (l *lexer) NextToken() token {
+func (l *lexer) NextToken() token.Token {
 	return <-l.tokens
 }
 
@@ -208,16 +111,16 @@ func lexFn(l *lexer) stateFn {
 		return lexTypecast
 	case l.char == ';':
 		l.advance()
-		l.emit(Semicolon)
+		l.emit(token.Semicolon)
 	case l.char == ',':
 		l.advance()
-		l.emit(Comma)
+		l.emit(token.Comma)
 	case l.char == '(':
 		l.advance()
-		l.emit(LParen)
+		l.emit(token.LParen)
 	case l.char == ')':
 		l.advance()
-		l.emit(RParen)
+		l.emit(token.RParen)
 	case l.char == '-' && l.peekChar() == '-':
 		return lexCommentLine
 	case l.char == '/' && l.peekChar() == '*':
@@ -232,12 +135,12 @@ func lexFn(l *lexer) stateFn {
 }
 
 func lexEOF(l *lexer) stateFn {
-	l.emit(EOF)
+	l.emit(token.EOF)
 	return nil
 }
 
 func lexIllegal(l *lexer) stateFn {
-	l.emit(Illegal)
+	l.emit(token.Illegal)
 	return nil
 }
 
@@ -245,7 +148,7 @@ func lexSpace(l *lexer) stateFn {
 	for isSpace(l.char) {
 		l.advance()
 	}
-	l.emit(Space)
+	l.emit(token.Space)
 	return lexFn
 }
 
@@ -260,7 +163,7 @@ func lexDoubleQuoteIdentifier(l *lexer) stateFn {
 		l.advance()
 	}
 	l.advance()
-	l.emit(Identifier)
+	l.emit(token.Identifier)
 	return lexFn
 }
 
@@ -272,7 +175,7 @@ func lexIdentifier(l *lexer) stateFn {
 	for isIdentifierCont(l.char) {
 		l.advance()
 	}
-	l.emit(LookupIdent(l.word()))
+	l.emit(token.LookupIdent(l.word()))
 	return lexFn
 }
 
@@ -296,7 +199,7 @@ Loop:
 	for {
 		switch l.char {
 		case eof:
-			l.emit(Illegal)
+			l.emit(token.Illegal)
 			return nil
 		case '\'':
 			if l.peekChar() == '\'' {
@@ -317,7 +220,7 @@ Loop:
 		}
 		l.advance()
 	}
-	l.emit(String)
+	l.emit(token.String)
 	return lexFn
 }
 
@@ -340,7 +243,7 @@ Loop:
 			break Loop
 		}
 	}
-	l.emit(Number)
+	l.emit(token.Number)
 	return lexFn
 }
 
@@ -355,7 +258,7 @@ Loop:
 			break Loop
 		}
 	}
-	l.emit(Number)
+	l.emit(token.Number)
 	return lexFn
 }
 
@@ -375,7 +278,7 @@ Loop:
 		}
 		l.advance()
 	}
-	l.emit(Comment)
+	l.emit(token.Comment)
 	return lexFn
 }
 
@@ -407,7 +310,7 @@ Loop:
 			l.advance()
 		}
 	}
-	l.emit(Comment)
+	l.emit(token.Comment)
 	return lexFn
 }
 
@@ -418,6 +321,6 @@ func lexTypecast(l *lexer) stateFn {
 		return lexIllegal
 	}
 	l.advance()
-	l.emit(Typecast)
+	l.emit(token.Typecast)
 	return lexFn
 }

@@ -3,6 +3,8 @@ package lexer
 import (
 	"fmt"
 	"testing"
+
+	"github.com/ttakezawa/pgconverger/token"
 )
 
 func Test_lexer_readChar(t *testing.T) {
@@ -50,7 +52,7 @@ func Test_lexer_readChar(t *testing.T) {
 
 func Test_lexer_NextToken(t *testing.T) {
 	type want struct {
-		typ  tokenType
+		typ  token.TokenType
 		val  string
 		line int
 	}
@@ -70,23 +72,23 @@ cd'
 yyy */
 `,
 			wants: []want{
-				{Identifier, "abc", 1},
-				{Identifier, "x", 2},
-				{Identifier, "f1", 2},
-				{Identifier, "abc$2", 2},
-				{Identifier, `"foobar"`, 2},
-				{String, "'aaaa''bbbb'", 3},
-				{String, "'a\\'b'", 3},
-				{String, "'ab\ncd'", 3},
-				{Number, "1.5", 5},
-				{Number, ".82", 5},
-				{EOF, "", 9},
+				{token.Identifier, "abc", 1},
+				{token.Identifier, "x", 2},
+				{token.Identifier, "f1", 2},
+				{token.Identifier, "abc$2", 2},
+				{token.Identifier, `"foobar"`, 2},
+				{token.String, "'aaaa''bbbb'", 3},
+				{token.String, "'a\\'b'", 3},
+				{token.String, "'ab\ncd'", 3},
+				{token.Number, "1.5", 5},
+				{token.Number, ".82", 5},
+				{token.EOF, "", 9},
 			},
 		},
 		{
 			input: `'a`,
 			wants: []want{
-				{Illegal, "'a", 1},
+				{token.Illegal, "'a", 1},
 			},
 		},
 		{
@@ -108,67 +110,67 @@ CREATE SEQUENCE users_id_seq
 ALTER TABLE ONLY "users" ALTER COLUMN "id" SET DEFAULT "nextval"('"users_id_seq"'::"regclass");
 `,
 			wants: []want{
-				{Create, "CREATE", 2},
-				{Table, "TABLE", 2},
-				{Identifier, `"users"`, 2},
-				{LParen, "(", 2},
-				{Identifier, `"id"`, 3},
-				{Bigint, "bigint", 3},
-				{Not, "NOT", 3},
-				{Null, "NULL", 3},
-				{Comma, ",", 3},
-				{Identifier, "name", 4},
-				{Character, "character", 4},
-				{Varying, "varying", 4},
-				{LParen, "(", 4},
-				{Number, "50", 4},
-				{RParen, ")", 4},
-				{RParen, ")", 5},
-				{Semicolon, ";", 5},
+				{token.Create, "CREATE", 2},
+				{token.Table, "TABLE", 2},
+				{token.Identifier, `"users"`, 2},
+				{token.LParen, "(", 2},
+				{token.Identifier, `"id"`, 3},
+				{token.Bigint, "bigint", 3},
+				{token.Not, "NOT", 3},
+				{token.Null, "NULL", 3},
+				{token.Comma, ",", 3},
+				{token.Identifier, "name", 4},
+				{token.Character, "character", 4},
+				{token.Varying, "varying", 4},
+				{token.LParen, "(", 4},
+				{token.Number, "50", 4},
+				{token.RParen, ")", 4},
+				{token.RParen, ")", 5},
+				{token.Semicolon, ";", 5},
 
-				{Alter, "ALTER", 7},
-				{Table, "TABLE", 7},
-				{Identifier, `"users"`, 7},
-				{Owner, "OWNER", 7},
-				{To, "TO", 7},
-				{Identifier, `"api"`, 7},
-				{Semicolon, ";", 7},
+				{token.Alter, "ALTER", 7},
+				{token.Table, "TABLE", 7},
+				{token.Identifier, `"users"`, 7},
+				{token.Owner, "OWNER", 7},
+				{token.To, "TO", 7},
+				{token.Identifier, `"api"`, 7},
+				{token.Semicolon, ";", 7},
 
-				{Create, "CREATE", 9},
-				{Sequence, "SEQUENCE", 9},
-				{Identifier, "users_id_seq", 9},
-				{Start, "START", 10},
-				{With, "WITH", 10},
-				{Number, "1", 10},
-				{Increment, "INCREMENT", 11},
-				{By, "BY", 11},
-				{Number, "1", 11},
-				{No, "NO", 12},
-				{Minvalue, "MINVALUE", 12},
-				{No, "NO", 13},
-				{Maxvalue, "MAXVALUE", 13},
-				{Cache, "CACHE", 14},
-				{Number, "1", 14},
-				{Semicolon, ";", 14},
+				{token.Create, "CREATE", 9},
+				{token.Sequence, "SEQUENCE", 9},
+				{token.Identifier, "users_id_seq", 9},
+				{token.Start, "START", 10},
+				{token.With, "WITH", 10},
+				{token.Number, "1", 10},
+				{token.Increment, "INCREMENT", 11},
+				{token.By, "BY", 11},
+				{token.Number, "1", 11},
+				{token.No, "NO", 12},
+				{token.Minvalue, "MINVALUE", 12},
+				{token.No, "NO", 13},
+				{token.Maxvalue, "MAXVALUE", 13},
+				{token.Cache, "CACHE", 14},
+				{token.Number, "1", 14},
+				{token.Semicolon, ";", 14},
 
-				{Alter, "ALTER", 16},
-				{Table, "TABLE", 16},
-				{Only, "ONLY", 16},
-				{Identifier, `"users"`, 16},
-				{Alter, "ALTER", 16},
-				{Column, "COLUMN", 16},
-				{Identifier, `"id"`, 16},
-				{Set, "SET", 16},
-				{Default, "DEFAULT", 16},
-				{Identifier, `"nextval"`, 16},
-				{LParen, "(", 16},
-				{String, "'\"users_id_seq\"'", 16},
-				{Typecast, "::", 16},
-				{Identifier, `"regclass"`, 16},
-				{RParen, ")", 16},
-				{Semicolon, ";", 16},
+				{token.Alter, "ALTER", 16},
+				{token.Table, "TABLE", 16},
+				{token.Only, "ONLY", 16},
+				{token.Identifier, `"users"`, 16},
+				{token.Alter, "ALTER", 16},
+				{token.Column, "COLUMN", 16},
+				{token.Identifier, `"id"`, 16},
+				{token.Set, "SET", 16},
+				{token.Default, "DEFAULT", 16},
+				{token.Identifier, `"nextval"`, 16},
+				{token.LParen, "(", 16},
+				{token.String, "'\"users_id_seq\"'", 16},
+				{token.Typecast, "::", 16},
+				{token.Identifier, `"regclass"`, 16},
+				{token.RParen, ")", 16},
+				{token.Semicolon, ";", 16},
 
-				{EOF, "", 17},
+				{token.EOF, "", 17},
 			},
 		},
 	}
@@ -177,14 +179,14 @@ ALTER TABLE ONLY "users" ALTER COLUMN "id" SET DEFAULT "nextval"('"users_id_seq"
 		l := Lex(tt.input)
 		for j, want := range tt.wants {
 			got := l.NextToken()
-			if got.typ != want.typ {
-				t.Errorf("case%d-%d lexer.NextToken().typ = %v, want %v", i+1, j+i, got.typ, want.typ)
+			if got.Typ != want.typ {
+				t.Errorf("case%d-%d lexer.NextToken().typ = %v, want %v", i+1, j+i, got.Typ, want.typ)
 			}
-			if got.val != want.val {
-				t.Errorf("case%d-%d lexer.NextToken().val = %q, want %q", i+1, j+i, got.val, want.val)
+			if got.Val != want.val {
+				t.Errorf("case%d-%d lexer.NextToken().val = %q, want %q", i+1, j+i, got.Val, want.val)
 			}
-			if got.line != want.line {
-				t.Errorf("case%d-%d lexer.NextToken().line = %v, want %v", i+1, j+i, got.line, want.line)
+			if got.Line != want.line {
+				t.Errorf("case%d-%d lexer.NextToken().line = %v, want %v", i+1, j+i, got.Line, want.line)
 			}
 		}
 	}

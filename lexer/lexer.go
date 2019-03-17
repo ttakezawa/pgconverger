@@ -169,6 +169,8 @@ func lexFn(l *lexer) stateFn {
 	switch {
 	case isSpace(l.char):
 		return lexSpace
+	case l.char == '"':
+		return lexDoubleQuoteIdentifier
 	case isIdentifierStart(l.char):
 		return lexIdentifier
 	case isNumberStart(l.char):
@@ -220,6 +222,17 @@ func lexSpace(l *lexer) stateFn {
 
 func isSpace(r rune) bool {
 	return r == ' ' || r == '\t' || r == '\n' || r == '\r'
+}
+
+// "foobar"
+func lexDoubleQuoteIdentifier(l *lexer) stateFn {
+	l.advance()
+	for l.char != '"' {
+		l.advance()
+	}
+	l.advance()
+	l.emit(Identifier)
+	return lexFn
 }
 
 // ident_start		[A-Za-z\200-\377_]

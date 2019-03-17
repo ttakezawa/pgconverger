@@ -61,7 +61,7 @@ func Test_lexer_NextToken(t *testing.T) {
 	}{
 		{
 			input: `abc
-x f1 abc$2
+x f1 abc$2 "foobar"
 'aaaa''bbbb' 'a\'b' 'ab
 cd'
 1.5 .82
@@ -74,6 +74,7 @@ yyy */
 				{Identifier, "x", 2},
 				{Identifier, "f1", 2},
 				{Identifier, "abc$2", 2},
+				{Identifier, `"foobar"`, 2},
 				{String, "'aaaa''bbbb'", 3},
 				{String, "'a\\'b'", 3},
 				{String, "'ab\ncd'", 3},
@@ -90,12 +91,12 @@ yyy */
 		},
 		{
 			input: `
-CREATE TABLE users (
-    id bigint NOT NULL,
+CREATE TABLE "users" (
+    "id" bigint NOT NULL,
     name character varying(50)
 );
 
-ALTER TABLE users OWNER TO api;
+ALTER TABLE "users" OWNER TO "api";
 
 CREATE SEQUENCE users_id_seq
     START WITH 1
@@ -107,9 +108,9 @@ CREATE SEQUENCE users_id_seq
 			wants: []want{
 				{Create, "CREATE", 2},
 				{Table, "TABLE", 2},
-				{Identifier, "users", 2},
+				{Identifier, `"users"`, 2},
 				{LParen, "(", 2},
-				{Identifier, "id", 3},
+				{Identifier, `"id"`, 3},
 				{Bigint, "bigint", 3},
 				{Not, "NOT", 3},
 				{Null, "NULL", 3},
@@ -125,10 +126,10 @@ CREATE SEQUENCE users_id_seq
 
 				{Alter, "ALTER", 7},
 				{Table, "TABLE", 7},
-				{Identifier, "users", 7},
+				{Identifier, `"users"`, 7},
 				{Owner, "OWNER", 7},
 				{To, "TO", 7},
-				{Identifier, "api", 7},
+				{Identifier, `"api"`, 7},
 				{Semicolon, ";", 7},
 
 				{Create, "CREATE", 9},

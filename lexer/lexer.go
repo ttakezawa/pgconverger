@@ -238,7 +238,7 @@ Loop:
 		case unicode.IsDigit(l.char):
 			continue
 		case l.char == '.':
-			return lexNumberFraction
+			return lexMantissa
 		default:
 			break Loop
 		}
@@ -247,7 +247,7 @@ Loop:
 	return lexFn
 }
 
-func lexNumberFraction(l *Lexer) stateFn {
+func lexMantissa(l *Lexer) stateFn {
 Loop:
 	for {
 		l.advance()

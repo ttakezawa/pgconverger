@@ -62,17 +62,22 @@ func (p *Parser) ParseDataDefinition() *ast.DataDefinition {
 }
 
 func (p *Parser) parseStatementList() (list []ast.Statement) {
-	if statement := p.parseStatement(); statement != nil {
-		list = append(list, statement)
-	}
+	for p.token.Typ != token.EOF {
+		if statement := p.parseStatement(); statement != nil {
+			list = append(list, statement)
+		}
 
-Loop:
-	for {
-		switch p.token.Typ {
-		case token.Semicolon, token.EOF, token.Illegal:
-			break Loop
-		default:
-			p.advance()
+	skipRest:
+		for {
+			switch p.token.Typ {
+			case token.EOF:
+				break skipRest
+			case token.Semicolon:
+				p.advance()
+				break skipRest
+			default:
+				p.advance()
+			}
 		}
 	}
 

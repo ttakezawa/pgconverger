@@ -90,9 +90,9 @@ var keywords = map[string]TokenType{
 }
 
 type Token struct {
-	Typ  TokenType
-	Val  string
-	Line int
+	Type    TokenType
+	Literal string
+	Line    int
 }
 
 func LookupIdent(ident string) TokenType {

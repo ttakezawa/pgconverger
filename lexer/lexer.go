@@ -82,9 +82,9 @@ func (l *Lexer) emit(typ token.TokenType) {
 		// ignore Space and Comment
 	default:
 		l.tokens <- token.Token{
-			Typ:  typ,
-			Val:  l.word(),
-			Line: l.startLine,
+			Type:    typ,
+			Literal: l.word(),
+			Line:    l.startLine,
 		}
 	}
 	l.startPosition = l.position

@@ -48,8 +48,8 @@ func (p *Parser) errorf(line int, format string, a ...interface{}) {
 }
 
 func (p *Parser) expectPeek(typ token.TokenType) bool {
-	if p.peekToken.Typ != typ {
-		p.errorf(p.peekToken.Line, "expected %s, found %s", typ, p.peekToken.Val)
+	if p.peekToken.Type != typ {
+		p.errorf(p.peekToken.Line, "expected %s, found %s", typ, p.peekToken.Literal)
 		return false
 	}
 	p.advance()
@@ -62,14 +62,14 @@ func (p *Parser) ParseDataDefinition() *ast.DataDefinition {
 }
 
 func (p *Parser) parseStatementList() (list []ast.Statement) {
-	for p.token.Typ != token.EOF {
+	for p.token.Type != token.EOF {
 		if statement := p.parseStatement(); statement != nil {
 			list = append(list, statement)
 		}
 
 	skipRest:
 		for {
-			switch p.token.Typ {
+			switch p.token.Type {
 			case token.EOF:
 				break skipRest
 			case token.Semicolon:
@@ -98,7 +98,7 @@ func (p *Parser) parseCreateTableStatement() ast.Statement {
 	if !p.expectPeek(token.Identifier) {
 		return nil
 	}
-	createTableStatement.TableName = p.token.Val
+	createTableStatement.TableName = p.token.Literal
 
 	if !p.expectPeek(token.LParen) {
 		return nil
@@ -108,12 +108,12 @@ func (p *Parser) parseCreateTableStatement() ast.Statement {
 		return nil
 	}
 
-	switch p.peekToken.Typ {
+	switch p.peekToken.Type {
 	case token.Semicolon:
 		p.advance()
 	case token.EOF:
 	default:
-		p.errorf(p.peekToken.Line, "expected %s, found %s", token.Semicolon, p.peekToken.Val)
+		p.errorf(p.peekToken.Line, "expected %s, found %s", token.Semicolon, p.peekToken.Literal)
 	}
 
 	return createTableStatement

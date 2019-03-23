@@ -52,9 +52,9 @@ func Test_lexer_readChar(t *testing.T) {
 
 func Test_lexer_NextToken(t *testing.T) {
 	type want struct {
-		typ  token.TokenType
-		val  string
-		line int
+		typ     token.TokenType
+		literal string
+		line    int
 	}
 
 	tests := []struct {
@@ -179,11 +179,11 @@ ALTER TABLE ONLY "users" ALTER COLUMN "id" SET DEFAULT "nextval"('"users_id_seq"
 		l := Lex(tt.input)
 		for j, want := range tt.wants {
 			got := l.NextToken()
-			if got.Typ != want.typ {
-				t.Errorf("case%d-%d Lexer.NextToken().typ = %v, want %v", i+1, j+i, got.Typ, want.typ)
+			if got.Type != want.typ {
+				t.Errorf("case%d-%d Lexer.NextToken().typ = %v, want %v", i+1, j+i, got.Type, want.typ)
 			}
-			if got.Val != want.val {
-				t.Errorf("case%d-%d Lexer.NextToken().val = %q, want %q", i+1, j+i, got.Val, want.val)
+			if got.Literal != want.literal {
+				t.Errorf("case%d-%d Lexer.NextToken().literal = %q, want %q", i+1, j+i, got.Literal, want.literal)
 			}
 			if got.Line != want.line {
 				t.Errorf("case%d-%d Lexer.NextToken().line = %v, want %v", i+1, j+i, got.Line, want.line)

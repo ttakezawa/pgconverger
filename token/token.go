@@ -22,10 +22,8 @@ const (
 
 	Add        TokenType = "Add"
 	Alter      TokenType = "Alter"
-	Bigint     TokenType = "Bigint"
 	By         TokenType = "By"
 	Cache      TokenType = "Cache"
-	Character  TokenType = "Character"
 	Column     TokenType = "Column"
 	Constraint TokenType = "Constraint"
 	Create     TokenType = "Create"
@@ -52,37 +50,64 @@ const (
 	Using      TokenType = "Using"
 	Varying    TokenType = "Varying"
 	With       TokenType = "With"
+
+	Bigint    TokenType = "Bigint"
+	Bigserial TokenType = "Bigserial"
+	Boolean   TokenType = "Boolean"
+	Bytea     TokenType = "Bytea"
+	Character TokenType = "Character"
+	Date      TokenType = "Date"
+	Integer   TokenType = "Integer"
+	Jsonb     TokenType = "Jsonb"
+	Numeric   TokenType = "Numeric"
+	Serial    TokenType = "Serial"
+	Text      TokenType = "Text"
+	Timestamp TokenType = "Timestamp"
+	Time      TokenType = "Time"
+	Tsvector  TokenType = "Tsvector"
 )
 
 var keywords = map[string]TokenType{
 	"ADD":        Add,
 	"ALTER":      Alter,
 	"BIGINT":     Bigint,
+	"BIGSERIAL":  Bigserial,
+	"BOOLEAN":    Boolean,
 	"BY":         By,
+	"BYTEA":      Bytea,
 	"CACHE":      Cache,
 	"CHARACTER":  Character,
 	"COLUMN":     Column,
 	"CONSTRAINT": Constraint,
 	"CREATE":     Create,
+	"DATE":       Date,
 	"DEFAULT":    Default,
 	"GRANT":      Grant,
 	"INCREMENT":  Increment,
 	"INDEX":      Index,
 	"INSERT":     Insert,
+	"INTEGER":    Integer,
+	"JSONB":      Jsonb,
 	"MAXVALUE":   Maxvalue,
 	"MINVALUE":   Minvalue,
 	"NO":         No,
 	"NOT":        Not,
 	"NULL":       Null,
+	"NUMERIC":    Numeric,
 	"ON":         On,
 	"ONLY":       Only,
 	"OWNER":      Owner,
 	"SELECT":     Select,
 	"SEQUENCE":   Sequence,
+	"SERIAL":     Serial,
 	"SET":        Set,
 	"START":      Start,
 	"TABLE":      Table,
+	"TEXT":       Text,
+	"TIME":       Time,
+	"TIMESTAMP":  Timestamp,
 	"TO":         To,
+	"TSVECTOR":   Tsvector,
 	"UPDATE":     Update,
 	"USING":      Using,
 	"VARYING":    Varying,

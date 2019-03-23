@@ -140,6 +140,7 @@ func lexEOF(l *Lexer) stateFn {
 }
 
 func lexIllegal(l *Lexer) stateFn {
+	l.advance()
 	l.emit(token.Illegal)
 	return lexFn
 }

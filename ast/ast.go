@@ -3,6 +3,8 @@ package ast
 import (
 	"fmt"
 	"strings"
+
+	"github.com/ttakezawa/pgconverger/token"
 )
 
 type Node interface {
@@ -38,7 +40,8 @@ func (dataDefinition *DataDefinition) String() string {
 // [ ON COMMIT { PRESERVE ROWS | DELETE ROWS | DROP } ]
 // [ TABLESPACE tablespace_name ]
 type CreateTableStatement struct {
-	TableName string
+	TableName            string
+	ColumnDefinitionList []*ColumnDefinition
 }
 
 func (*CreateTableStatement) statementNode() {}
@@ -47,3 +50,91 @@ func (createTableStatement *CreateTableStatement) String() string {
 	_, _ = fmt.Fprintf(&b, "CREATE TABLE '%s' ();", createTableStatement.TableName)
 	return b.String()
 }
+
+type ColumnDefinition struct {
+	Name           token.Token
+	Type           DataType
+	ConstraintList []ColumnConstraint
+}
+
+type DataType interface {
+	Name() DataTypeName
+}
+
+type DataTypeBigint struct {
+	Token token.Token
+}
+
+func (*DataTypeBigint) Name() DataTypeName { return Bigint }
+
+type DataTypeBigserial struct{}
+
+func (*DataTypeBigserial) Name() DataTypeName { return Bigserial }
+
+//go:generate stringer -type=DataTypeName
+type DataTypeName int
+
+const (
+	Bigint DataTypeName = iota
+	Bigserial
+	// Not implemented: Bit
+	// Not implemented: BitVarying
+	Boolean
+	// Not implemented: Box
+	Bytea
+	// Not implemented: Character
+	CharacterVarying
+	// Not implemented: Cidr
+	// Not implemented: Circle
+	Date
+	// Not implemented: DoublePrecision
+	// Not implemented: Inet
+	Integer
+	// Not implemented: Interval
+	// Not implemented: Json
+	Jsonb
+	// Not implemented: Line
+	// Not implemented: Lseg
+	// Not implemented: Macaddr
+	// Not implemented: Macaddr8
+	// Not implemented: Money
+	Numeric
+	// Not implemented: Path
+	// Not implemented: PgLsn
+	// Not implemented: Point
+	// Not implemented: Polygon
+	// Not implemented: Real
+	// Not implemented: Smallint
+	// Not implemented: Smallserial
+	Serial
+	Text
+	// Not implemented: Time
+	// Not implemented: TimeWithTimeZone
+	// Not implemented: Timestamp
+	TimestampWithTimeZone
+	// Not implemented: Tsquery
+	Tsvector
+	// Not implemented: TxidSnapshot
+	// Not implemented: UUID
+	// Not implemented: Xml
+)
+
+// { NOT NULL |
+//   NULL |
+//   DEFAULT default_expr |
+//   UNIQUE index_parameters |
+//   PRIMARY KEY index_parameters
+// }
+type ColumnConstraint interface {
+}
+
+// NOT NULL
+type ColumnConstraintNotNull struct {
+}
+
+// DEFAULT default_expr
+type ColumnConstraintDefault struct {
+	Expr DefaultExpr
+}
+
+type DefaultExpr interface{}

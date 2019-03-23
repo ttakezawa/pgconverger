@@ -3,6 +3,7 @@ package parser
 import (
 	"testing"
 
+	"github.com/ttakezawa/pgconverger/ast"
 	"github.com/ttakezawa/pgconverger/lexer"
 )
 
@@ -24,8 +25,10 @@ func TestCreateTableStatement(t *testing.T) {
 	}{
 		{`
 CREATE TABLE "users" (
--- "id" bigint NOT NULL,
--- name character varying(50)
+  "id" bigint NOT NULL,
+  "id2" bigint NOT NULL DEFAULT 'nextval(''public.authorization_advice_transactions_id_seq''::regclass)'
+  -- name character varying(50) DEFAULT '-' NOT NULL,
+  -- created_at timestamp with time zone
 );`,
 		},
 	}
@@ -35,6 +38,16 @@ CREATE TABLE "users" (
 		dataDefinition := p.ParseDataDefinition()
 
 		t.Logf("DDL: %+v", dataDefinition)
+		t.Logf("DDL: %#v", dataDefinition)
+
+		createTableStmt, _ := dataDefinition.StatementList[0].(*ast.CreateTableStatement)
+		t.Logf("CREATE_TABLE: %+v", createTableStmt)
+		t.Logf("CREATE_TABLE: %#v", createTableStmt)
+		t.Logf("COL1: %+v", createTableStmt.ColumnDefinitionList[0])
+		t.Logf("COL1: %#v", createTableStmt.ColumnDefinitionList[0])
+		t.Logf("COL2: %+v", createTableStmt.ColumnDefinitionList[1])
+		t.Logf("COL2: %#v", createTableStmt.ColumnDefinitionList[1])
+
 		checkParserErrors(t, p)
 	}
 }

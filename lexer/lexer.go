@@ -73,7 +73,15 @@ func (l *Lexer) peekChar() rune {
 }
 
 func (l *Lexer) word() string {
-	return l.input[l.startPosition:l.position]
+	i := l.startPosition
+	j := l.position
+	if i > len(l.input) {
+		i = len(l.input)
+	}
+	if j > len(l.input) {
+		j = len(l.input)
+	}
+	return l.input[i:j]
 }
 
 func (l *Lexer) emit(typ token.TokenType) {

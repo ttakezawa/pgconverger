@@ -31,6 +31,7 @@ const (
 	Constraint
 	Create
 	Default
+	False
 	Grant
 	Increment
 	Index
@@ -50,6 +51,7 @@ const (
 	Start
 	Table
 	To
+	True
 	Update
 	Using
 	Varying
@@ -88,6 +90,7 @@ var keywords = map[string]TokenType{
 	"CREATE":     Create,
 	"DATE":       Date,
 	"DEFAULT":    Default,
+	"FALSE":      False,
 	"GRANT":      Grant,
 	"INCREMENT":  Increment,
 	"INDEX":      Index,
@@ -114,6 +117,7 @@ var keywords = map[string]TokenType{
 	"TIME":       Time,
 	"TIMESTAMP":  Timestamp,
 	"TO":         To,
+	"TRUE":       True,
 	"TSVECTOR":   Tsvector,
 	"UPDATE":     Update,
 	"USING":      Using,

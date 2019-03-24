@@ -293,7 +293,13 @@ func (p *Parser) parseColumnConstraint() ast.ColumnConstraint {
 }
 
 func (p *Parser) parseDefaultExpr() ast.DefaultExpr {
-	tok := p.token
-	p.advance()
-	return tok
+	switch p.peekToken.Type {
+	case token.Number, token.String, token.True, token.False, token.Null:
+		expr := ast.SimpleExpr{Token: p.peekToken}
+		p.advance()
+		return &expr
+	default:
+		p.errorf(p.peekToken.Line, "unsupported expression: %s", p.peekToken.Literal)
+		return nil
+	}
 }

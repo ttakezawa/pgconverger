@@ -110,6 +110,10 @@ func (columnDefinition *ColumnDefinition) Source(w io.StringWriter) {
 	columnDefinition.Name.Source(w)
 	_, _ = w.WriteString(" ")
 	columnDefinition.Type.Source(w)
+	for _, constraint := range columnDefinition.ConstraintList {
+		_, _ = w.WriteString(" ")
+		constraint.Source(w)
+	}
 }
 
 type DataType interface {
@@ -220,10 +224,15 @@ const (
 //   PRIMARY KEY index_parameters
 // }
 type ColumnConstraint interface {
+	Node
 }
 
 // NOT NULL
 type ColumnConstraintNotNull struct {
+}
+
+func (*ColumnConstraintNotNull) Source(w io.StringWriter) {
+	_, _ = w.WriteString("NOT NULL")
 }
 
 // DEFAULT default_expr
@@ -231,4 +240,20 @@ type ColumnConstraintDefault struct {
 	Expr DefaultExpr
 }
 
-type DefaultExpr interface{}
+func (columnConstraintDefault *ColumnConstraintDefault) Source(w io.StringWriter) {
+	_, _ = w.WriteString("DEFAULT ")
+	columnConstraintDefault.Expr.Source(w)
+}
+
+type DefaultExpr interface {
+	Node
+}
+
+// SimpleExpr contains only a token.
+type SimpleExpr struct {
+	Token token.Token
+}
+
+func (simpleExpr *SimpleExpr) Source(w io.StringWriter) {
+	_, _ = w.WriteString(simpleExpr.Token.Literal)
+}

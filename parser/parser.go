@@ -102,6 +102,8 @@ func (p *Parser) parseStatement() ast.Statement {
 	switch p.token.Type {
 	case token.Create:
 		switch p.peekToken.Type {
+		case token.Schema:
+			return p.parseCreateSchemaStatement()
 		case token.Table:
 			return p.parseCreateTableStatement()
 		default:
@@ -114,6 +116,18 @@ func (p *Parser) parseStatement() ast.Statement {
 		p.errorf(p.token.Line, "unknown token: %s", p.token.Literal)
 	}
 	return nil
+}
+
+func (p *Parser) parseCreateSchemaStatement() ast.Statement {
+	var createSchemaStatement ast.CreateSchemaStatement
+	if !p.expectPeek(token.Schema) {
+		return nil
+	}
+	if !p.expectPeek(token.Identifier) {
+		return nil
+	}
+	createSchemaStatement.Name = ast.NewIdentifier(p.token)
+	return &createSchemaStatement
 }
 
 func (p *Parser) parseCreateTableStatement() ast.Statement {

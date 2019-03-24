@@ -54,6 +54,18 @@ func (dataDefinition *DataDefinition) Source(w io.StringWriter) {
 	}
 }
 
+type CreateSchemaStatement struct {
+	Name *Identifier
+}
+
+func (*CreateSchemaStatement) statementNode() {}
+
+func (createSchemaStatement *CreateSchemaStatement) Source(w io.StringWriter) {
+	_, _ = w.WriteString("CREATE SCHEMA ")
+	createSchemaStatement.Name.Source(w)
+	_, _ = w.WriteString(";\n")
+}
+
 // CREATE [ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } | UNLOGGED ] TABLE [ IF NOT EXISTS ] table_name ( [
 //   { column_name data_type [ COLLATE collation ] [ column_constraint [ ... ] ]
 //     | table_constraint

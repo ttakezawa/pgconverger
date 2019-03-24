@@ -43,6 +43,7 @@ const (
 	On
 	Only
 	Owner
+	Schema
 	Select
 	Sequence
 	Set
@@ -102,6 +103,7 @@ var keywords = map[string]TokenType{
 	"ON":         On,
 	"ONLY":       Only,
 	"OWNER":      Owner,
+	"SCHEMA":     Schema,
 	"SELECT":     Select,
 	"SEQUENCE":   Sequence,
 	"SERIAL":     Serial,

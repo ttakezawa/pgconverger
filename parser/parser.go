@@ -164,10 +164,15 @@ func (p *Parser) parseColumnDefinition() *ast.ColumnDefinition {
 	}
 	def.Type = dataType
 
-	p.advance()
-	columnConstraintList := p.parseColumnConstraintList()
-	def.ConstraintList = columnConstraintList
-
+	switch p.peekToken.Type {
+	case token.Comma, token.RParen:
+		// Do nothing
+	default:
+		p.advance()
+		// Parse constraint
+		columnConstraintList := p.parseColumnConstraintList()
+		def.ConstraintList = columnConstraintList
+	}
 	return &def
 }
 
@@ -190,6 +195,17 @@ func (p *Parser) parseDataType() ast.DataType {
 			dataTypeCharacter.Length = tok
 		}
 		return &dataTypeCharacter
+	case token.Timestamp:
+		var dataTypeTimestamp ast.DataTypeTimestamp
+		// timestamp with time zone
+		if p.peekToken.Type == token.With {
+			p.advance()
+			if ok := p.expectPeek(token.Time) && p.expectPeek(token.Zone); !ok {
+				return nil
+			}
+			dataTypeTimestamp.WithTimeZone = true
+		}
+		return &dataTypeTimestamp
 	default:
 		p.errorf(p.token.Line, "expected DataType, found %s", p.token.Literal)
 		return nil

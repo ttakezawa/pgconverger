@@ -78,6 +78,12 @@ type DataTypeCharacter struct {
 
 func (*DataTypeCharacter) Name() DataTypeName { return Character }
 
+type DataTypeTimestamp struct {
+	WithTimeZone bool
+}
+
+func (*DataTypeTimestamp) Name() DataTypeName { return Timestamp }
+
 //go:generate stringer -type=DataTypeName
 type DataTypeName int
 
@@ -116,8 +122,7 @@ const (
 	Text
 	// Not implemented: Time
 	// Not implemented: TimeWithTimeZone
-	// Not implemented: Timestamp
-	TimestampWithTimeZone
+	Timestamp
 	// Not implemented: Tsquery
 	Tsvector
 	// Not implemented: TxidSnapshot

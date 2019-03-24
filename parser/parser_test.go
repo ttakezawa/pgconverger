@@ -27,8 +27,8 @@ func TestCreateTableStatement(t *testing.T) {
 CREATE TABLE "users" (
   "id" bigint NOT NULL,
   "id2" bigint NOT NULL DEFAULT 'nextval(''users_id_seq''::regclass)',
-  name character varying(50) DEFAULT '-' NOT NULL
-  -- created_at timestamp with time zone
+  name character varying(50) DEFAULT '-' NOT NULL,
+  created_at timestamp with time zone
 );`,
 		},
 	}
@@ -46,6 +46,7 @@ CREATE TABLE "users" (
 		t.Logf("COL1: %#v", createTableStmt.ColumnDefinitionList[0])
 		t.Logf("COL2: %#v", createTableStmt.ColumnDefinitionList[1])
 		t.Logf("COL3: %#v", createTableStmt.ColumnDefinitionList[2])
+		t.Logf("COL4: %#v", createTableStmt.ColumnDefinitionList[3])
 
 		checkParserErrors(t, p)
 	}

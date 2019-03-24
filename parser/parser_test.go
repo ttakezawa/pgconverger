@@ -28,12 +28,14 @@ func TestCreateTableStatement(t *testing.T) {
     "id" bigint NOT NULL,
     "id2" bigint NOT NULL DEFAULT 'nextval(''users_id_seq''::regclass)',
     name character varying(50) DEFAULT '-' NOT NULL,
+    name2 "text",
     created_at timestamp with time zone
 );`,
 			`CREATE TABLE "users" (
     "id" bigint NOT NULL,
     "id2" bigint NOT NULL DEFAULT 'nextval(''users_id_seq''::regclass)',
     "name" character varying(50) DEFAULT '-' NOT NULL,
+    "name2" text,
     "created_at" timestamp with time zone
 );
 `,
@@ -46,7 +48,7 @@ func TestCreateTableStatement(t *testing.T) {
 		var builder strings.Builder
 		dataDefinition.Source(&builder)
 		if builder.String() != tt.expected {
-			t.Errorf("case%d ast.Source() =\n      %q, want =\n      %q", i+1, builder.String(), tt.expected)
+			t.Errorf("case%d:\n\tgot  =      %q,\n\twant =      %q", i+1, builder.String(), tt.expected)
 		}
 		checkParserErrors(t, p)
 	}

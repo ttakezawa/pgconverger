@@ -49,6 +49,11 @@ func (dataTypeCharacter *DataTypeCharacter) Source(w io.StringWriter) {
 	}
 }
 
+type DataTypeText struct{}
+
+func (*DataTypeText) Name() DataTypeName       { return Text }
+func (*DataTypeText) Source(w io.StringWriter) { _, _ = w.WriteString("text") }
+
 type DataTypeTimestamp struct {
 	WithTimeZone bool
 }

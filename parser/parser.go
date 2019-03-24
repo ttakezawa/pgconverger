@@ -238,7 +238,13 @@ func (p *Parser) parseDataType() ast.DataType {
 			dataTypeTimestamp.WithTimeZone = true
 		}
 		return &dataTypeTimestamp
+	case token.Text:
+		return &ast.DataTypeText{}
 	default:
+		if p.token.Literal == `"text"` {
+			return &ast.DataTypeText{}
+		}
+
 		p.errorf(p.token.Line, "expected DataType, found %s", p.token.Literal)
 		return nil
 	}

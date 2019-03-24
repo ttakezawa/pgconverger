@@ -240,9 +240,14 @@ func (p *Parser) parseDataType() ast.DataType {
 		return &dataTypeTimestamp
 	case token.Text:
 		return &ast.DataTypeText{}
+	case token.Jsonb:
+		return &ast.DataTypeJsonb{}
 	default:
-		if p.token.Literal == `"text"` {
+		switch p.token.Literal {
+		case `"text"`:
 			return &ast.DataTypeText{}
+		case `"jsonb"`:
+			return &ast.DataTypeJsonb{}
 		}
 
 		p.errorf(p.token.Line, "expected DataType, found %s", p.token.Literal)

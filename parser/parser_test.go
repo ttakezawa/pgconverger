@@ -29,6 +29,8 @@ func TestCreateTableStatement(t *testing.T) {
     "id2" bigint NOT NULL DEFAULT 'nextval(''users_id_seq''::regclass)',
     name character varying(50) DEFAULT '-' NOT NULL,
     name2 "text",
+    data jsonb,
+    data2 "jsonb",
     created_at timestamp with time zone
 );`,
 			`CREATE TABLE "users" (
@@ -36,6 +38,8 @@ func TestCreateTableStatement(t *testing.T) {
     "id2" bigint NOT NULL DEFAULT 'nextval(''users_id_seq''::regclass)',
     "name" character varying(50) DEFAULT '-' NOT NULL,
     "name2" text,
+    "data" jsonb,
+    "data2" jsonb,
     "created_at" timestamp with time zone
 );
 `,

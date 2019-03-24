@@ -31,9 +31,10 @@ func TestCreateTableStatement(t *testing.T) {
     name2 "text",
     data jsonb,
     data2 "jsonb",
-    "num" integer,
+    "digit" integer,
     "bytes" bytea,
     is_read boolean,
+    "numer" numeric,
     created_at timestamp with time zone
 );`,
 			`CREATE TABLE "users" (
@@ -43,9 +44,10 @@ func TestCreateTableStatement(t *testing.T) {
     "name2" text,
     "data" jsonb,
     "data2" jsonb,
-    "num" integer,
+    "digit" integer,
     "bytes" bytea,
     "is_read" boolean,
+    "numer" numeric,
     "created_at" timestamp with time zone
 );
 `,

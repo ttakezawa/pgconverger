@@ -35,6 +35,11 @@ type DataTypeBoolean struct{}
 func (*DataTypeBoolean) Name() DataTypeName       { return Boolean }
 func (*DataTypeBoolean) Source(w io.StringWriter) { _, _ = w.WriteString("boolean") }
 
+type DataTypeNumeric struct{}
+
+func (*DataTypeNumeric) Name() DataTypeName       { return Numeric }
+func (*DataTypeNumeric) Source(w io.StringWriter) { _, _ = w.WriteString("numeric") }
+
 type DataTypeOptionLength struct {
 	token.Token
 }

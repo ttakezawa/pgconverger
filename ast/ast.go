@@ -139,7 +139,7 @@ func (dataTypeTimestamp *DataTypeTimestamp) Source(w io.StringWriter) {
 	}
 }
 
-//go:generate stringer -type=DataTypeName
+// //go:generate stringer -type=DataTypeName
 type DataTypeName int
 
 const (

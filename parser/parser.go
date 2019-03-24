@@ -214,6 +214,8 @@ func (p *Parser) parseDataType() ast.DataType {
 		return &ast.DataTypeInteger{p.token}
 	case token.Bigint:
 		return &ast.DataTypeBigint{p.token}
+	case token.Boolean:
+		return &ast.DataTypeBoolean{}
 	case token.Character:
 		var dataTypeCharacter ast.DataTypeCharacter
 		if p.peekToken.Type == token.Varying {

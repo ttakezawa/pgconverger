@@ -30,6 +30,11 @@ type DataTypeBigserial struct{}
 func (*DataTypeBigserial) Name() DataTypeName       { return Bigserial }
 func (*DataTypeBigserial) Source(w io.StringWriter) { _, _ = w.WriteString("bigserial") }
 
+type DataTypeBoolean struct{}
+
+func (*DataTypeBoolean) Name() DataTypeName       { return Boolean }
+func (*DataTypeBoolean) Source(w io.StringWriter) { _, _ = w.WriteString("boolean") }
+
 type DataTypeOptionLength struct {
 	token.Token
 }

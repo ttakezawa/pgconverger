@@ -210,6 +210,8 @@ func (p *Parser) parseColumnDefinition() *ast.ColumnDefinition {
 
 func (p *Parser) parseDataType() ast.DataType {
 	switch p.token.Type {
+	case token.Integer:
+		return &ast.DataTypeInteger{p.token}
 	case token.Bigint:
 		return &ast.DataTypeBigint{p.token}
 	case token.Character:

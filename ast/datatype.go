@@ -11,6 +11,13 @@ type DataType interface {
 	Name() DataTypeName
 }
 
+type DataTypeInteger struct {
+	Token token.Token
+}
+
+func (*DataTypeInteger) Name() DataTypeName       { return Integer }
+func (*DataTypeInteger) Source(w io.StringWriter) { _, _ = w.WriteString("integer") }
+
 type DataTypeBigint struct {
 	Token token.Token
 }

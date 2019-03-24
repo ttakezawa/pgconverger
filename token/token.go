@@ -4,67 +4,68 @@ import (
 	"strings"
 )
 
-type TokenType string
+//go:generate stringer -type=TokenType
+type TokenType int
 
 const (
-	Illegal    TokenType = "Illegal"
-	EOF        TokenType = "EOF"
-	Space      TokenType = "Space"
-	Comment    TokenType = "Comment"
-	Identifier TokenType = "Identifier"
-	String     TokenType = "String"
-	Number     TokenType = "Number"
-	Semicolon  TokenType = "Semicolon"
-	Comma      TokenType = "Comma"
-	LParen     TokenType = "LParen"
-	RParen     TokenType = "RParen"
-	Typecast   TokenType = "Typecast"
+	Illegal TokenType = iota
+	EOF
+	Space
+	Comment
+	Identifier
+	String
+	Number
+	Semicolon
+	Comma
+	LParen
+	RParen
+	Typecast
 
-	Add        TokenType = "Add"
-	Alter      TokenType = "Alter"
-	By         TokenType = "By"
-	Cache      TokenType = "Cache"
-	Column     TokenType = "Column"
-	Constraint TokenType = "Constraint"
-	Create     TokenType = "Create"
-	Default    TokenType = "Default"
-	Grant      TokenType = "Grant"
-	Increment  TokenType = "Increment"
-	Index      TokenType = "Index"
-	Insert     TokenType = "Insert"
-	Maxvalue   TokenType = "Maxvalue"
-	Minvalue   TokenType = "Minvalue"
-	No         TokenType = "No"
-	Not        TokenType = "Not"
-	Null       TokenType = "Null"
-	On         TokenType = "On"
-	Only       TokenType = "Only"
-	Owner      TokenType = "Owner"
-	Select     TokenType = "Select"
-	Sequence   TokenType = "Sequence"
-	Set        TokenType = "Set"
-	Start      TokenType = "Start"
-	Table      TokenType = "Table"
-	To         TokenType = "To"
-	Update     TokenType = "Update"
-	Using      TokenType = "Using"
-	Varying    TokenType = "Varying"
-	With       TokenType = "With"
+	Add
+	Alter
+	By
+	Cache
+	Column
+	Constraint
+	Create
+	Default
+	Grant
+	Increment
+	Index
+	Insert
+	Maxvalue
+	Minvalue
+	No
+	Not
+	Null
+	On
+	Only
+	Owner
+	Select
+	Sequence
+	Set
+	Start
+	Table
+	To
+	Update
+	Using
+	Varying
+	With
 
-	Bigint    TokenType = "Bigint"
-	Bigserial TokenType = "Bigserial"
-	Boolean   TokenType = "Boolean"
-	Bytea     TokenType = "Bytea"
-	Character TokenType = "Character"
-	Date      TokenType = "Date"
-	Integer   TokenType = "Integer"
-	Jsonb     TokenType = "Jsonb"
-	Numeric   TokenType = "Numeric"
-	Serial    TokenType = "Serial"
-	Text      TokenType = "Text"
-	Timestamp TokenType = "Timestamp"
-	Time      TokenType = "Time"
-	Tsvector  TokenType = "Tsvector"
+	Bigint
+	Bigserial
+	Boolean
+	Bytea
+	Character
+	Date
+	Integer
+	Jsonb
+	Numeric
+	Serial
+	Text
+	Timestamp
+	Time
+	Tsvector
 )
 
 var keywords = map[string]TokenType{

@@ -22,7 +22,7 @@ type DataDefinition struct {
 func (dataDefinition *DataDefinition) Source(w io.StringWriter) {
 	for i, statement := range dataDefinition.StatementList {
 		if i > 0 {
-			_, _ = w.WriteString("\n\n")
+			_, _ = w.WriteString("\n")
 		}
 		statement.Source(w)
 	}

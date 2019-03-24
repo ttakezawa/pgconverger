@@ -183,21 +183,29 @@ func (p *Parser) parseDataType() ast.DataType {
 		}
 		if p.peekToken.Type == token.LParen {
 			p.advance()
-			// Parse: ( n )
-			if ok := p.expectPeek(token.Number); !ok {
+			tok := p.parseDataTypeOptionLength()
+			if tok == nil {
 				return nil
 			}
-			tok := p.token
-			dataTypeCharacter.Length = &tok
-			if ok := p.expectPeek(token.RParen); !ok {
-				return nil
-			}
+			dataTypeCharacter.Length = tok
 		}
 		return &dataTypeCharacter
 	default:
 		p.errorf(p.token.Line, "expected DataType, found %s", p.token.Literal)
 		return nil
 	}
+}
+
+// Parse: ( n )
+func (p *Parser) parseDataTypeOptionLength() *token.Token {
+	if ok := p.expectPeek(token.Number); !ok {
+		return nil
+	}
+	tok := p.token
+	if ok := p.expectPeek(token.RParen); !ok {
+		return nil
+	}
+	return &tok
 }
 
 func (p *Parser) parseColumnConstraintList() (constraints []ast.ColumnConstraint) {

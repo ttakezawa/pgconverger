@@ -107,7 +107,7 @@ func (p *Parser) parseStatement() ast.Statement {
 		default:
 			p.errorf(p.peekToken.Line, "unknown token: CREATE %s", p.peekToken.Literal)
 		}
-	case token.Set:
+	case token.Set, token.Comment:
 		// Ignore
 		return nil
 	default:

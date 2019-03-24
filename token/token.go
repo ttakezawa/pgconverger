@@ -74,56 +74,61 @@ const (
 	Tsvector
 )
 
-var keywords = map[string]TokenType{
-	"ADD":        Add,
-	"ALTER":      Alter,
-	"BIGINT":     Bigint,
-	"BIGSERIAL":  Bigserial,
-	"BOOLEAN":    Boolean,
-	"BY":         By,
-	"BYTEA":      Bytea,
-	"CACHE":      Cache,
-	"CHARACTER":  Character,
-	"COLUMN":     Column,
-	"COMMENT":    Comment,
-	"CONSTRAINT": Constraint,
-	"CREATE":     Create,
-	"DATE":       Date,
-	"DEFAULT":    Default,
-	"FALSE":      False,
-	"GRANT":      Grant,
-	"INCREMENT":  Increment,
-	"INDEX":      Index,
-	"INSERT":     Insert,
-	"INTEGER":    Integer,
-	"JSONB":      Jsonb,
-	"MAXVALUE":   Maxvalue,
-	"MINVALUE":   Minvalue,
-	"NO":         No,
-	"NOT":        Not,
-	"NULL":       Null,
-	"NUMERIC":    Numeric,
-	"ON":         On,
-	"ONLY":       Only,
-	"OWNER":      Owner,
-	"SCHEMA":     Schema,
-	"SELECT":     Select,
-	"SEQUENCE":   Sequence,
-	"SERIAL":     Serial,
-	"SET":        Set,
-	"START":      Start,
-	"TABLE":      Table,
-	"TEXT":       Text,
-	"TIME":       Time,
-	"TIMESTAMP":  Timestamp,
-	"TO":         To,
-	"TRUE":       True,
-	"TSVECTOR":   Tsvector,
-	"UPDATE":     Update,
-	"USING":      Using,
-	"VARYING":    Varying,
-	"WITH":       With,
-	"ZONE":       Zone,
+type keyword struct {
+	Type     TokenType
+	Reserved bool
+}
+
+var keywords = map[string]keyword{
+	"ADD":        {Add, false},
+	"ALTER":      {Alter, false},
+	"BIGINT":     {Bigint, false},
+	"BIGSERIAL":  {Bigserial, false},
+	"BOOLEAN":    {Boolean, false},
+	"BY":         {By, false},
+	"BYTEA":      {Bytea, false},
+	"CACHE":      {Cache, false},
+	"CHARACTER":  {Character, false},
+	"COLUMN":     {Column, true},
+	"COMMENT":    {Comment, false},
+	"CONSTRAINT": {Constraint, true},
+	"CREATE":     {Create, true},
+	"DATE":       {Date, false},
+	"DEFAULT":    {Default, true},
+	"FALSE":      {False, true},
+	"GRANT":      {Grant, true},
+	"INCREMENT":  {Increment, false},
+	"INDEX":      {Index, false},
+	"INSERT":     {Insert, false},
+	"INTEGER":    {Integer, false},
+	"JSONB":      {Jsonb, false},
+	"MAXVALUE":   {Maxvalue, false},
+	"MINVALUE":   {Minvalue, false},
+	"NO":         {No, false},
+	"NOT":        {Not, true},
+	"NULL":       {Null, true},
+	"NUMERIC":    {Numeric, false},
+	"ON":         {On, true},
+	"ONLY":       {Only, true},
+	"OWNER":      {Owner, false},
+	"SCHEMA":     {Schema, false},
+	"SELECT":     {Select, true},
+	"SEQUENCE":   {Sequence, false},
+	"SERIAL":     {Serial, false},
+	"SET":        {Set, false},
+	"START":      {Start, false},
+	"TABLE":      {Table, true},
+	"TEXT":       {Text, false},
+	"TIME":       {Time, false},
+	"TIMESTAMP":  {Timestamp, false},
+	"TO":         {To, true},
+	"TRUE":       {True, true},
+	"TSVECTOR":   {Tsvector, false},
+	"UPDATE":     {Update, false},
+	"USING":      {Using, true},
+	"VARYING":    {Varying, false},
+	"WITH":       {With, true},
+	"ZONE":       {Zone, false},
 }
 
 type Token struct {
@@ -132,9 +137,15 @@ type Token struct {
 	Line    int
 }
 
+func (tok *Token) IsReserved() bool {
+	key := strings.ToUpper(tok.Type.String())
+	keyword, ok := keywords[key]
+	return ok && keyword.Reserved
+}
+
 func LookupIdent(ident string) TokenType {
 	if keyword, ok := keywords[strings.ToUpper(ident)]; ok {
-		return keyword
+		return keyword.Type
 	}
 	return Identifier
 }

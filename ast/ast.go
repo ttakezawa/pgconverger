@@ -20,21 +20,6 @@ type Identifier struct {
 	Value string
 }
 
-func NewIdentifier(tok token.Token) *Identifier {
-	identifier := Identifier{Token: tok}
-
-	switch {
-	case len(tok.Literal) == 0:
-		identifier.Value = ""
-	case tok.Literal[0] == '"':
-		identifier.Value = tok.Literal[1 : len(tok.Literal)-1]
-	default:
-		identifier.Value = tok.Literal
-	}
-
-	return &identifier
-}
-
 func (identifier *Identifier) Source(w io.StringWriter) {
 	_, _ = w.WriteString(`"`)
 	_, _ = w.WriteString(identifier.Value)

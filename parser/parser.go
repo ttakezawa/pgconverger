@@ -123,10 +123,12 @@ func (p *Parser) parseCreateSchemaStatement() ast.Statement {
 	if !p.expectPeek(token.Schema) {
 		return nil
 	}
-	if !p.expectPeek(token.Identifier) {
+	p.advance()
+	identifier := p.parseIdentifier()
+	if identifier == nil {
 		return nil
 	}
-	createSchemaStatement.Name = ast.NewIdentifier(p.token)
+	createSchemaStatement.Name = identifier
 	return &createSchemaStatement
 }
 
@@ -137,10 +139,12 @@ func (p *Parser) parseCreateTableStatement() ast.Statement {
 		return nil
 	}
 
-	if !p.expectPeek(token.Identifier) {
+	p.advance()
+	identifier := p.parseIdentifier()
+	if identifier == nil {
 		return nil
 	}
-	createTableStatement.TableName = ast.NewIdentifier(p.token)
+	createTableStatement.TableName = identifier
 
 	if !p.expectPeek(token.LParen) {
 		return nil
@@ -181,14 +185,39 @@ func (p *Parser) parseColumnDefinitionList() (defs []*ast.ColumnDefinition) {
 	return
 }
 
+func (p *Parser) parseIdentifier() *ast.Identifier {
+	switch {
+	case p.token.Type == token.Identifier:
+		identifier := ast.Identifier{Token: p.token}
+		switch {
+		case len(p.token.Literal) == 0:
+			identifier.Value = ""
+		case p.token.Literal[0] == '"':
+			identifier.Value = p.token.Literal[1 : len(p.token.Literal)-1]
+		default:
+			identifier.Value = p.token.Literal
+		}
+		return &identifier
+	case !p.token.IsReserved():
+		return &ast.Identifier{
+			Token: p.token,
+			Value: p.token.Literal,
+		}
+	default:
+		p.errorf(p.token.Line, "expected identifier, found %s", p.token.Literal)
+		return nil
+	}
+}
+
 // column_name data_type [ COLLATE collation ] [ column_constraint [ ... ] ]
 func (p *Parser) parseColumnDefinition() *ast.ColumnDefinition {
 	var def ast.ColumnDefinition
-	tok, ok := p.expect(token.Identifier)
-	if !ok {
+	identifier := p.parseIdentifier()
+	if identifier == nil {
 		return nil
 	}
-	def.Name = ast.NewIdentifier(tok)
+	def.Name = identifier
+	p.advance()
 
 	dataType := p.parseDataType()
 	if dataType == nil {

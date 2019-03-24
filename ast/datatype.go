@@ -66,6 +66,11 @@ type DataTypeJsonb struct{}
 func (*DataTypeJsonb) Name() DataTypeName       { return Jsonb }
 func (*DataTypeJsonb) Source(w io.StringWriter) { _, _ = w.WriteString("jsonb") }
 
+type DataTypeBytea struct{}
+
+func (*DataTypeBytea) Name() DataTypeName       { return Bytea }
+func (*DataTypeBytea) Source(w io.StringWriter) { _, _ = w.WriteString("bytea") }
+
 type DataTypeTimestamp struct {
 	WithTimeZone bool
 }

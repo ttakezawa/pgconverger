@@ -233,6 +233,8 @@ func (p *Parser) parseDataType() ast.DataType {
 			dataTypeCharacter.OptionLength = optionLength
 		}
 		return &dataTypeCharacter
+	case token.Date:
+		return &ast.DataTypeDate{}
 	case token.Timestamp:
 		var dataTypeTimestamp ast.DataTypeTimestamp
 		// timestamp with time zone
@@ -252,6 +254,8 @@ func (p *Parser) parseDataType() ast.DataType {
 		return &ast.DataTypeBytea{}
 	default:
 		switch p.token.Literal {
+		case `"date"`:
+			return &ast.DataTypeDate{}
 		case `"text"`:
 			return &ast.DataTypeText{}
 		case `"jsonb"`:

@@ -35,6 +35,7 @@ func TestCreateTableStatement(t *testing.T) {
     "bytes" bytea,
     is_read boolean,
     "numer" numeric,
+    "date" date,
     created_at timestamp with time zone
 );`,
 			`CREATE TABLE "users" (
@@ -48,6 +49,7 @@ func TestCreateTableStatement(t *testing.T) {
     "bytes" bytea,
     "is_read" boolean,
     "numer" numeric,
+    "date" date, 
     "created_at" timestamp with time zone
 );
 `,

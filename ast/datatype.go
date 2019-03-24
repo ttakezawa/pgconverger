@@ -81,6 +81,11 @@ type DataTypeBytea struct{}
 func (*DataTypeBytea) Name() DataTypeName       { return Bytea }
 func (*DataTypeBytea) Source(w io.StringWriter) { _, _ = w.WriteString("bytea") }
 
+type DataTypeDate struct{}
+
+func (*DataTypeDate) Name() DataTypeName       { return Date }
+func (*DataTypeDate) Source(w io.StringWriter) { _, _ = w.WriteString("date") }
+
 type DataTypeTimestamp struct {
 	WithTimeZone bool
 }

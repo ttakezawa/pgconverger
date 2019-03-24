@@ -1,9 +1,9 @@
 package parser
 
 import (
+	"strings"
 	"testing"
 
-	"github.com/ttakezawa/pgconverger/ast"
 	"github.com/ttakezawa/pgconverger/lexer"
 )
 
@@ -36,18 +36,9 @@ CREATE TABLE "users" (
 	for _, tt := range tests {
 		p := New(lexer.Lex(tt.input))
 		dataDefinition := p.ParseDataDefinition()
-
-		t.Logf("DDL: %+v", dataDefinition)
-		t.Logf("DDL: %#v", dataDefinition)
-
-		createTableStmt, _ := dataDefinition.StatementList[0].(*ast.CreateTableStatement)
-		t.Logf("CREATE_TABLE: %+v", createTableStmt)
-		t.Logf("CREATE_TABLE: %#v", createTableStmt)
-		t.Logf("COL1: %#v", createTableStmt.ColumnDefinitionList[0])
-		t.Logf("COL2: %#v", createTableStmt.ColumnDefinitionList[1])
-		t.Logf("COL3: %#v", createTableStmt.ColumnDefinitionList[2])
-		t.Logf("COL4: %#v", createTableStmt.ColumnDefinitionList[3])
-
+		var builder strings.Builder
+		dataDefinition.Source(&builder)
+		t.Logf("\n%s", builder.String())
 		checkParserErrors(t, p)
 	}
 }

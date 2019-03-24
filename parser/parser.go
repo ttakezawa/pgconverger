@@ -108,7 +108,7 @@ func (p *Parser) parseCreateTableStatement() ast.Statement {
 	if !p.expectPeek(token.Identifier) {
 		return nil
 	}
-	createTableStatement.TableName = p.token.Literal
+	createTableStatement.TableName = p.token
 
 	if !p.expectPeek(token.LParen) {
 		return nil
@@ -188,11 +188,11 @@ func (p *Parser) parseDataType() ast.DataType {
 		}
 		if p.peekToken.Type == token.LParen {
 			p.advance()
-			tok := p.parseDataTypeOptionLength()
-			if tok == nil {
+			optionLength := p.parseDataTypeOptionLength()
+			if optionLength == nil {
 				return nil
 			}
-			dataTypeCharacter.Length = tok
+			dataTypeCharacter.OptionLength = optionLength
 		}
 		return &dataTypeCharacter
 	case token.Timestamp:
@@ -213,7 +213,7 @@ func (p *Parser) parseDataType() ast.DataType {
 }
 
 // Parse: ( n )
-func (p *Parser) parseDataTypeOptionLength() *token.Token {
+func (p *Parser) parseDataTypeOptionLength() *ast.DataTypeOptionLength {
 	if ok := p.expectPeek(token.Number); !ok {
 		return nil
 	}
@@ -221,7 +221,7 @@ func (p *Parser) parseDataTypeOptionLength() *token.Token {
 	if ok := p.expectPeek(token.RParen); !ok {
 		return nil
 	}
-	return &tok
+	return &ast.DataTypeOptionLength{tok}
 }
 
 func (p *Parser) parseColumnConstraintList() (constraints []ast.ColumnConstraint) {

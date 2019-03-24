@@ -1,14 +1,13 @@
 package ast
 
 import (
-	"fmt"
-	"strings"
+	"io"
 
 	"github.com/ttakezawa/pgconverger/token"
 )
 
 type Node interface {
-	String() string
+	Source(w io.StringWriter)
 }
 
 type Statement interface {
@@ -20,12 +19,13 @@ type DataDefinition struct {
 	StatementList []Statement
 }
 
-func (dataDefinition *DataDefinition) String() string {
-	var b strings.Builder
-	for _, statement := range dataDefinition.StatementList {
-		b.WriteString(statement.String())
+func (dataDefinition *DataDefinition) Source(w io.StringWriter) {
+	for i, statement := range dataDefinition.StatementList {
+		if i > 0 {
+			_, _ = w.WriteString("\n\n")
+		}
+		statement.Source(w)
 	}
-	return b.String()
 }
 
 // CREATE [ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } | UNLOGGED ] TABLE [ IF NOT EXISTS ] table_name ( [
@@ -40,15 +40,36 @@ func (dataDefinition *DataDefinition) String() string {
 // [ ON COMMIT { PRESERVE ROWS | DELETE ROWS | DROP } ]
 // [ TABLESPACE tablespace_name ]
 type CreateTableStatement struct {
-	TableName            string
+	TableName            token.Token
 	ColumnDefinitionList []*ColumnDefinition
 }
 
 func (*CreateTableStatement) statementNode() {}
-func (createTableStatement *CreateTableStatement) String() string {
-	var b strings.Builder
-	_, _ = fmt.Fprintf(&b, "CREATE TABLE '%s' ();", createTableStatement.TableName)
-	return b.String()
+
+func identifierToSource(tok token.Token) string {
+	if len(tok.Literal) == 0 {
+		return `""`
+	}
+	if tok.Literal[0] == '"' {
+		return tok.Literal
+	}
+	return `"` + tok.Literal + `"`
+}
+
+func (createTableStatement *CreateTableStatement) Source(w io.StringWriter) {
+	_, _ = w.WriteString("CREATE TABLE ")
+	_, _ = w.WriteString(identifierToSource(createTableStatement.TableName))
+	_, _ = w.WriteString(" (\n")
+
+	for i, columnDefinition := range createTableStatement.ColumnDefinitionList {
+		_, _ = w.WriteString("    ")
+		columnDefinition.Source(w)
+		if i < len(createTableStatement.ColumnDefinitionList)-1 {
+			_, _ = w.WriteString(",")
+		}
+		_, _ = w.WriteString("\n")
+	}
+	_, _ = w.WriteString(");\n")
 }
 
 type ColumnDefinition struct {
@@ -57,7 +78,14 @@ type ColumnDefinition struct {
 	ConstraintList []ColumnConstraint
 }
 
+func (columnDefinition *ColumnDefinition) Source(w io.StringWriter) {
+	_, _ = w.WriteString(identifierToSource(columnDefinition.Name))
+	_, _ = w.WriteString(" ")
+	columnDefinition.Type.Source(w)
+}
+
 type DataType interface {
+	Node
 	Name() DataTypeName
 }
 
@@ -65,24 +93,51 @@ type DataTypeBigint struct {
 	Token token.Token
 }
 
-func (*DataTypeBigint) Name() DataTypeName { return Bigint }
+func (*DataTypeBigint) Name() DataTypeName       { return Bigint }
+func (*DataTypeBigint) Source(w io.StringWriter) { _, _ = w.WriteString("bigint") }
 
 type DataTypeBigserial struct{}
 
-func (*DataTypeBigserial) Name() DataTypeName { return Bigserial }
+func (*DataTypeBigserial) Name() DataTypeName       { return Bigserial }
+func (*DataTypeBigserial) Source(w io.StringWriter) { _, _ = w.WriteString("bigserial") }
+
+type DataTypeOptionLength struct {
+	token.Token
+}
+
+func (dataTypeOptionLength *DataTypeOptionLength) Source(w io.StringWriter) {
+	_, _ = w.WriteString("(")
+	_, _ = w.WriteString(dataTypeOptionLength.Literal)
+	_, _ = w.WriteString(")")
+}
 
 type DataTypeCharacter struct {
-	Varying bool
-	Length  *token.Token
+	Varying      bool
+	OptionLength *DataTypeOptionLength
 }
 
 func (*DataTypeCharacter) Name() DataTypeName { return Character }
+func (dataTypeCharacter *DataTypeCharacter) Source(w io.StringWriter) {
+	_, _ = w.WriteString("character")
+	if dataTypeCharacter.Varying {
+		_, _ = w.WriteString(" varying")
+	}
+	if dataTypeCharacter.OptionLength != nil {
+		dataTypeCharacter.OptionLength.Source(w)
+	}
+}
 
 type DataTypeTimestamp struct {
 	WithTimeZone bool
 }
 
 func (*DataTypeTimestamp) Name() DataTypeName { return Timestamp }
+func (dataTypeTimestamp *DataTypeTimestamp) Source(w io.StringWriter) {
+	_, _ = w.WriteString("timestamp")
+	if dataTypeTimestamp.WithTimeZone {
+		_, _ = w.WriteString(" with time zone")
+	}
+}
 
 //go:generate stringer -type=DataTypeName
 type DataTypeName int

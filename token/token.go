@@ -12,6 +12,8 @@ const (
 	EOF
 	Space
 	Comment
+	CommentBlock
+	CommentLine
 	Identifier
 	String
 	Number
@@ -80,6 +82,7 @@ var keywords = map[string]TokenType{
 	"CACHE":      Cache,
 	"CHARACTER":  Character,
 	"COLUMN":     Column,
+	"COMMENT":    Comment,
 	"CONSTRAINT": Constraint,
 	"CREATE":     Create,
 	"DATE":       Date,

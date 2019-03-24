@@ -86,7 +86,7 @@ func (l *Lexer) word() string {
 
 func (l *Lexer) emit(typ token.TokenType) {
 	switch typ {
-	case token.Space, token.Comment:
+	case token.Space, token.CommentLine, token.CommentBlock:
 		// ignore Space and Comment
 	default:
 		l.tokens <- token.Token{
@@ -294,7 +294,7 @@ Loop:
 		}
 		l.advance()
 	}
-	l.emit(token.Comment)
+	l.emit(token.CommentLine)
 	return lexFn
 }
 
@@ -326,7 +326,7 @@ Loop:
 			l.advance()
 		}
 	}
-	l.emit(token.Comment)
+	l.emit(token.CommentBlock)
 	return lexFn
 }
 

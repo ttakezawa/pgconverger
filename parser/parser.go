@@ -99,7 +99,21 @@ func (p *Parser) parseStatementList() (list []ast.Statement) {
 }
 
 func (p *Parser) parseStatement() ast.Statement {
-	return p.parseCreateTableStatement()
+	switch p.token.Type {
+	case token.Create:
+		switch p.peekToken.Type {
+		case token.Table:
+			return p.parseCreateTableStatement()
+		default:
+			p.errorf(p.peekToken.Line, "unknown token: CREATE %s", p.peekToken.Literal)
+		}
+	case token.Set:
+		// Ignore
+		return nil
+	default:
+		p.errorf(p.token.Line, "unknown token: %s", p.token.Literal)
+	}
+	return nil
 }
 
 func (p *Parser) parseCreateTableStatement() ast.Statement {

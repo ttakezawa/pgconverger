@@ -112,7 +112,7 @@ func (p *Parser) parseCreateTableStatement() ast.Statement {
 	if !p.expectPeek(token.Identifier) {
 		return nil
 	}
-	createTableStatement.TableName = p.token
+	createTableStatement.TableName = ast.NewIdentifier(p.token)
 
 	if !p.expectPeek(token.LParen) {
 		return nil
@@ -160,7 +160,7 @@ func (p *Parser) parseColumnDefinition() *ast.ColumnDefinition {
 	if !ok {
 		return nil
 	}
-	def.Name = tok
+	def.Name = ast.NewIdentifier(tok)
 
 	dataType := p.parseDataType()
 	if dataType == nil {

@@ -15,6 +15,32 @@ type Statement interface {
 	statementNode()
 }
 
+type Identifier struct {
+	Token token.Token
+	Value string
+}
+
+func NewIdentifier(tok token.Token) *Identifier {
+	identifier := Identifier{Token: tok}
+
+	switch {
+	case len(tok.Literal) == 0:
+		identifier.Value = ""
+	case tok.Literal[0] == '"':
+		identifier.Value = tok.Literal[1 : len(tok.Literal)-1]
+	default:
+		identifier.Value = tok.Literal
+	}
+
+	return &identifier
+}
+
+func (identifier *Identifier) Source(w io.StringWriter) {
+	_, _ = w.WriteString(`"`)
+	_, _ = w.WriteString(identifier.Value)
+	_, _ = w.WriteString(`"`)
+}
+
 type DataDefinition struct {
 	StatementList []Statement
 }
@@ -40,25 +66,15 @@ func (dataDefinition *DataDefinition) Source(w io.StringWriter) {
 // [ ON COMMIT { PRESERVE ROWS | DELETE ROWS | DROP } ]
 // [ TABLESPACE tablespace_name ]
 type CreateTableStatement struct {
-	TableName            token.Token
+	TableName            *Identifier
 	ColumnDefinitionList []*ColumnDefinition
 }
 
 func (*CreateTableStatement) statementNode() {}
 
-func identifierToSource(tok token.Token) string {
-	if len(tok.Literal) == 0 {
-		return `""`
-	}
-	if tok.Literal[0] == '"' {
-		return tok.Literal
-	}
-	return `"` + tok.Literal + `"`
-}
-
 func (createTableStatement *CreateTableStatement) Source(w io.StringWriter) {
 	_, _ = w.WriteString("CREATE TABLE ")
-	_, _ = w.WriteString(identifierToSource(createTableStatement.TableName))
+	createTableStatement.TableName.Source(w)
 	_, _ = w.WriteString(" (\n")
 
 	for i, columnDefinition := range createTableStatement.ColumnDefinitionList {
@@ -73,13 +89,13 @@ func (createTableStatement *CreateTableStatement) Source(w io.StringWriter) {
 }
 
 type ColumnDefinition struct {
-	Name           token.Token
+	Name           *Identifier
 	Type           DataType
 	ConstraintList []ColumnConstraint
 }
 
 func (columnDefinition *ColumnDefinition) Source(w io.StringWriter) {
-	_, _ = w.WriteString(identifierToSource(columnDefinition.Name))
+	columnDefinition.Name.Source(w)
 	_, _ = w.WriteString(" ")
 	columnDefinition.Type.Source(w)
 }

@@ -175,6 +175,25 @@ func (p *Parser) parseDataType() ast.DataType {
 	switch p.token.Type {
 	case token.Bigint:
 		return &ast.DataTypeBigint{p.token}
+	case token.Character:
+		var dataTypeCharacter ast.DataTypeCharacter
+		if p.peekToken.Type == token.Varying {
+			p.advance()
+			dataTypeCharacter.Varying = true
+		}
+		if p.peekToken.Type == token.LParen {
+			p.advance()
+			// Parse: ( n )
+			if ok := p.expectPeek(token.Number); !ok {
+				return nil
+			}
+			tok := p.token
+			dataTypeCharacter.Length = &tok
+			if ok := p.expectPeek(token.RParen); !ok {
+				return nil
+			}
+		}
+		return &dataTypeCharacter
 	default:
 		p.errorf(p.token.Line, "expected DataType, found %s", p.token.Literal)
 		return nil

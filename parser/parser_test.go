@@ -26,8 +26,8 @@ func TestCreateTableStatement(t *testing.T) {
 		{`
 CREATE TABLE "users" (
   "id" bigint NOT NULL,
-  "id2" bigint NOT NULL DEFAULT 'nextval(''public.authorization_advice_transactions_id_seq''::regclass)'
-  -- name character varying(50) DEFAULT '-' NOT NULL,
+  "id2" bigint NOT NULL DEFAULT 'nextval(''users_id_seq''::regclass)',
+  name character varying(50) DEFAULT '-' NOT NULL
   -- created_at timestamp with time zone
 );`,
 		},
@@ -43,10 +43,9 @@ CREATE TABLE "users" (
 		createTableStmt, _ := dataDefinition.StatementList[0].(*ast.CreateTableStatement)
 		t.Logf("CREATE_TABLE: %+v", createTableStmt)
 		t.Logf("CREATE_TABLE: %#v", createTableStmt)
-		t.Logf("COL1: %+v", createTableStmt.ColumnDefinitionList[0])
 		t.Logf("COL1: %#v", createTableStmt.ColumnDefinitionList[0])
-		t.Logf("COL2: %+v", createTableStmt.ColumnDefinitionList[1])
 		t.Logf("COL2: %#v", createTableStmt.ColumnDefinitionList[1])
+		t.Logf("COL3: %#v", createTableStmt.ColumnDefinitionList[2])
 
 		checkParserErrors(t, p)
 	}

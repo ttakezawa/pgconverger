@@ -71,6 +71,13 @@ type DataTypeBigserial struct{}
 
 func (*DataTypeBigserial) Name() DataTypeName { return Bigserial }
 
+type DataTypeCharacter struct {
+	Varying bool
+	Length  *token.Token
+}
+
+func (*DataTypeCharacter) Name() DataTypeName { return Character }
+
 //go:generate stringer -type=DataTypeName
 type DataTypeName int
 
@@ -82,8 +89,7 @@ const (
 	Boolean
 	// Not implemented: Box
 	Bytea
-	// Not implemented: Character
-	CharacterVarying
+	Character
 	// Not implemented: Cidr
 	// Not implemented: Circle
 	Date

@@ -36,6 +36,7 @@ func TestCreateTableStatement(t *testing.T) {
     is_read boolean,
     "numer" numeric,
     "date" date,
+    "vec" "tsvector",
     created_at timestamp with time zone
 );`,
 			`CREATE TABLE "users" (
@@ -49,7 +50,8 @@ func TestCreateTableStatement(t *testing.T) {
     "bytes" bytea,
     "is_read" boolean,
     "numer" numeric,
-    "date" date, 
+    "date" date,
+    "vec" tsvector,
     "created_at" timestamp with time zone
 );
 `,

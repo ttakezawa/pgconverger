@@ -252,6 +252,8 @@ func (p *Parser) parseDataType() ast.DataType {
 		return &ast.DataTypeJsonb{}
 	case token.Bytea:
 		return &ast.DataTypeBytea{}
+	case token.Tsvector:
+		return &ast.DataTypeTsvector{}
 	default:
 		switch p.token.Literal {
 		case `"date"`:
@@ -262,6 +264,8 @@ func (p *Parser) parseDataType() ast.DataType {
 			return &ast.DataTypeJsonb{}
 		case `"bytea"`:
 			return &ast.DataTypeBytea{}
+		case `"tsvector"`:
+			return &ast.DataTypeTsvector{}
 		}
 
 		p.errorf(p.token.Line, "expected DataType, found %s", p.token.Literal)

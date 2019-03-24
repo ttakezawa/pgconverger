@@ -81,6 +81,11 @@ type DataTypeBytea struct{}
 func (*DataTypeBytea) Name() DataTypeName       { return Bytea }
 func (*DataTypeBytea) Source(w io.StringWriter) { _, _ = w.WriteString("bytea") }
 
+type DataTypeTsvector struct{}
+
+func (*DataTypeTsvector) Name() DataTypeName       { return Tsvector }
+func (*DataTypeTsvector) Source(w io.StringWriter) { _, _ = w.WriteString("tsvector") }
+
 type DataTypeDate struct{}
 
 func (*DataTypeDate) Name() DataTypeName       { return Date }

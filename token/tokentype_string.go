@@ -50,25 +50,26 @@ func _() {
 	_ = x[Using-39]
 	_ = x[Varying-40]
 	_ = x[With-41]
-	_ = x[Bigint-42]
-	_ = x[Bigserial-43]
-	_ = x[Boolean-44]
-	_ = x[Bytea-45]
-	_ = x[Character-46]
-	_ = x[Date-47]
-	_ = x[Integer-48]
-	_ = x[Jsonb-49]
-	_ = x[Numeric-50]
-	_ = x[Serial-51]
-	_ = x[Text-52]
-	_ = x[Timestamp-53]
-	_ = x[Time-54]
-	_ = x[Tsvector-55]
+	_ = x[Zone-42]
+	_ = x[Bigint-43]
+	_ = x[Bigserial-44]
+	_ = x[Boolean-45]
+	_ = x[Bytea-46]
+	_ = x[Character-47]
+	_ = x[Date-48]
+	_ = x[Integer-49]
+	_ = x[Jsonb-50]
+	_ = x[Numeric-51]
+	_ = x[Serial-52]
+	_ = x[Text-53]
+	_ = x[Timestamp-54]
+	_ = x[Time-55]
+	_ = x[Tsvector-56]
 }
 
-const _TokenType_name = "IllegalEOFSpaceCommentIdentifierStringNumberSemicolonCommaLParenRParenTypecastAddAlterByCacheColumnConstraintCreateDefaultGrantIncrementIndexInsertMaxvalueMinvalueNoNotNullOnOnlyOwnerSelectSequenceSetStartTableToUpdateUsingVaryingWithBigintBigserialBooleanByteaCharacterDateIntegerJsonbNumericSerialTextTimestampTimeTsvector"
+const _TokenType_name = "IllegalEOFSpaceCommentIdentifierStringNumberSemicolonCommaLParenRParenTypecastAddAlterByCacheColumnConstraintCreateDefaultGrantIncrementIndexInsertMaxvalueMinvalueNoNotNullOnOnlyOwnerSelectSequenceSetStartTableToUpdateUsingVaryingWithZoneBigintBigserialBooleanByteaCharacterDateIntegerJsonbNumericSerialTextTimestampTimeTsvector"
 
-var _TokenType_index = [...]uint16{0, 7, 10, 15, 22, 32, 38, 44, 53, 58, 64, 70, 78, 81, 86, 88, 93, 99, 109, 115, 122, 127, 136, 141, 147, 155, 163, 165, 168, 172, 174, 178, 183, 189, 197, 200, 205, 210, 212, 218, 223, 230, 234, 240, 249, 256, 261, 270, 274, 281, 286, 293, 299, 303, 312, 316, 324}
+var _TokenType_index = [...]uint16{0, 7, 10, 15, 22, 32, 38, 44, 53, 58, 64, 70, 78, 81, 86, 88, 93, 99, 109, 115, 122, 127, 136, 141, 147, 155, 163, 165, 168, 172, 174, 178, 183, 189, 197, 200, 205, 210, 212, 218, 223, 230, 234, 238, 244, 253, 260, 265, 274, 278, 285, 290, 297, 303, 307, 316, 320, 328}
 
 func (i TokenType) String() string {
 	if i < 0 || i >= TokenType(len(_TokenType_index)-1) {

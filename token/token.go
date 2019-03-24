@@ -51,6 +51,7 @@ const (
 	Using
 	Varying
 	With
+	Zone
 
 	Bigint
 	Bigserial
@@ -113,6 +114,7 @@ var keywords = map[string]TokenType{
 	"USING":      Using,
 	"VARYING":    Varying,
 	"WITH":       With,
+	"ZONE":       Zone,
 }
 
 type Token struct {

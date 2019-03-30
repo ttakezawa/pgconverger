@@ -177,3 +177,20 @@ func (il *NumberLiteral) expressionNode() {}
 func (il *NumberLiteral) Source(w io.StringWriter) {
 	_, _ = w.WriteString(il.Token.Literal)
 }
+
+type BooleanLiteral struct {
+	Token token.Token
+}
+
+func (bl *BooleanLiteral) expressionNode() {}
+func (bl *BooleanLiteral) Source(w io.StringWriter) {
+	if bl.IsTrue() {
+		_, _ = w.WriteString("TRUE")
+	} else {
+		_, _ = w.WriteString("FALSE")
+	}
+}
+
+func (bl *BooleanLiteral) IsTrue() bool {
+	return bl.Token.Type == token.True
+}

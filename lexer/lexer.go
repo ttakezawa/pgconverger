@@ -117,6 +117,15 @@ func lexFn(l *Lexer) stateFn {
 		return lexString
 	case l.char == ':':
 		return lexTypecast
+	case l.char == '+':
+		l.advance()
+		l.emit(token.Plus)
+	case l.char == '*':
+		l.advance()
+		l.emit(token.Asterisk)
+	case l.char == '/':
+		l.advance()
+		l.emit(token.Slash)
 	case l.char == ';':
 		l.advance()
 		l.emit(token.Semicolon)

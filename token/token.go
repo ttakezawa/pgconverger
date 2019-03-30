@@ -21,6 +21,10 @@ const (
 	Comma
 	LParen
 	RParen
+	Plus
+	Minus
+	Asterisk
+	Slash
 	Typecast
 
 	Add

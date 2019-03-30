@@ -15,11 +15,17 @@ type Statement interface {
 	statementNode()
 }
 
+type Expression interface {
+	Node
+	expressionNode()
+}
+
 type Identifier struct {
 	Token token.Token
 	Value string
 }
 
+func (identifier *Identifier) expressionNode() {}
 func (identifier *Identifier) Source(w io.StringWriter) {
 	_, _ = w.WriteString(`"`)
 	_, _ = w.WriteString(identifier.Value)
@@ -107,7 +113,7 @@ func (columnDefinition *ColumnDefinition) Source(w io.StringWriter) {
 
 // { NOT NULL |
 //   NULL |
-//   DEFAULT default_expr |
+//   DEFAULT expr |
 //   UNIQUE index_parameters |
 //   PRIMARY KEY index_parameters
 // }
@@ -131,9 +137,9 @@ func (*ColumnConstraintNull) Source(w io.StringWriter) {
 	_, _ = w.WriteString("NULL")
 }
 
-// DEFAULT default_expr
+// DEFAULT expr
 type ColumnConstraintDefault struct {
-	Expr DefaultExpr
+	Expr Expression
 }
 
 func (columnConstraintDefault *ColumnConstraintDefault) Source(w io.StringWriter) {
@@ -141,15 +147,33 @@ func (columnConstraintDefault *ColumnConstraintDefault) Source(w io.StringWriter
 	columnConstraintDefault.Expr.Source(w)
 }
 
-type DefaultExpr interface {
-	Node
+type InfixExpression struct {
+	Left     Expression
+	Operator token.Token
+	Right    Expression
 }
 
-// SimpleExpr contains only a token.
-type SimpleExpr struct {
+func (infixExpr *InfixExpression) expressionNode() {}
+func (infixExpr *InfixExpression) Source(w io.StringWriter) {
+	infixExpr.Left.Source(w)
+	_, _ = w.WriteString(infixExpr.Operator.Literal)
+	infixExpr.Right.Source(w)
+}
+
+type StringLiteral struct {
 	Token token.Token
 }
 
-func (simpleExpr *SimpleExpr) Source(w io.StringWriter) {
-	_, _ = w.WriteString(simpleExpr.Token.Literal)
+func (il *StringLiteral) expressionNode() {}
+func (il *StringLiteral) Source(w io.StringWriter) {
+	_, _ = w.WriteString(il.Token.Literal)
+}
+
+type NumberLiteral struct {
+	Token token.Token
+}
+
+func (il *NumberLiteral) expressionNode() {}
+func (il *NumberLiteral) Source(w io.StringWriter) {
+	_, _ = w.WriteString(il.Token.Literal)
 }

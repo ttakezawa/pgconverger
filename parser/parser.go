@@ -8,24 +8,89 @@ import (
 	"github.com/ttakezawa/pgconverger/token"
 )
 
+const (
+	_ int = iota
+	precedenceLowest
+	precedenceSum
+	precedenceProduct
+	precedenceTypecast
+	precedencePrefix // -x
+)
+
+type (
+	prefixParseFn func() ast.Expression
+	infixParseFn  func(ast.Expression) ast.Expression
+)
+
 type Parser struct {
 	l         *lexer.Lexer
 	token     token.Token
 	peekToken token.Token
 	errors    []error
+
+	prefixParseFns map[token.TokenType]prefixParseFn
+	infixParseFns  map[token.TokenType]infixParseFn
 }
 
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{
 		l: l,
 	}
+
+	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
+	p.registerPrefix(token.String, p.parseStringLiteral)
+	p.registerPrefix(token.Number, p.parseNumberLiteral)
+	p.registerPrefix(token.Identifier, p.parseIdentifierAsExpression)
+	// p.registerPrefix(token.Minus, p.parsePrefixExpression)
+	// p.registerPrefix(token.Plus, p.parsePrefixExpression)
+	// p.registerPrefix(token.True, p.parseBoolean)
+	// p.registerPrefix(token.False, p.parseBoolean)
+	// p.registerPrefix(token.Null, p.parseNull)
+
+	p.infixParseFns = make(map[token.TokenType]infixParseFn)
+	p.registerInfix(token.Plus, p.parseInfixExpression)
+	p.registerInfix(token.Minus, p.parseInfixExpression)
+	p.registerInfix(token.Slash, p.parseInfixExpression)
+	p.registerInfix(token.Asterisk, p.parseInfixExpression)
+	p.registerInfix(token.Typecast, p.parseInfixExpression)
+
 	p.advance()
 	p.advance()
 	return p
 }
 
+func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn) {
+	p.prefixParseFns[tokenType] = fn
+}
+
+func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
+	p.infixParseFns[tokenType] = fn
+}
+
 func (p *Parser) Errors() []error {
 	return p.errors
+}
+
+var precedences = map[token.TokenType]int{
+	token.Plus:     precedenceSum,
+	token.Minus:    precedenceSum,
+	token.Slash:    precedenceProduct,
+	token.Asterisk: precedenceProduct,
+	token.Typecast: precedenceTypecast,
+}
+
+func (p *Parser) peekPrecedence() int {
+	if p, ok := precedences[p.peekToken.Type]; ok {
+		return p
+	}
+	return precedenceLowest
+}
+
+func (p *Parser) currentPrecedence() int {
+	if p, ok := precedences[p.token.Type]; ok {
+		return p
+	}
+	return precedenceLowest
 }
 
 func (p *Parser) advance() {
@@ -185,6 +250,10 @@ func (p *Parser) parseColumnDefinitionList() (defs []*ast.ColumnDefinition) {
 	return
 }
 
+func (p *Parser) parseIdentifierAsExpression() ast.Expression {
+	return p.parseIdentifier()
+}
+
 func (p *Parser) parseIdentifier() *ast.Identifier {
 	switch {
 	case p.token.Type == token.Identifier:
@@ -232,6 +301,9 @@ func (p *Parser) parseColumnDefinition() *ast.ColumnDefinition {
 		p.advance()
 		// Parse constraint
 		columnConstraintList := p.parseColumnConstraintList()
+		if columnConstraintList == nil {
+			return nil
+		}
 		def.ConstraintList = columnConstraintList
 	}
 	return &def
@@ -344,23 +416,65 @@ func (p *Parser) parseColumnConstraint() ast.ColumnConstraint {
 		// NULL
 		return &ast.ColumnConstraintNull{}
 	case token.Default:
-		// DEFAULT default_expr
+		// DEFAULT expr
+		p.advance()
+		expr := p.parseExpression(precedenceLowest)
+		if expr == nil {
+			return nil
+		}
 		return &ast.ColumnConstraintDefault{
-			Expr: p.parseDefaultExpr(),
+			Expr: expr,
 		}
 	default:
 		return nil
 	}
 }
 
-func (p *Parser) parseDefaultExpr() ast.DefaultExpr {
-	switch p.peekToken.Type {
-	case token.Number, token.String, token.True, token.False, token.Null:
-		expr := ast.SimpleExpr{Token: p.peekToken}
-		p.advance()
-		return &expr
-	default:
-		p.errorf(p.peekToken.Line, "unsupported expression: %s", p.peekToken.Literal)
+func (p *Parser) noPrefixParseFnError(t token.Token) {
+	p.errorf(t.Line, "no prefix parse function for %s found", t.Type)
+}
+
+func (p *Parser) parseExpression(precedence int) ast.Expression {
+	prefix := p.prefixParseFns[p.token.Type]
+	if prefix == nil {
+		p.noPrefixParseFnError(p.token)
 		return nil
 	}
+	leftExp := prefix()
+
+	for precedence < p.peekPrecedence() {
+		infix := p.infixParseFns[p.peekToken.Type]
+		if infix == nil {
+			return leftExp
+		}
+		p.advance()
+		leftExp = infix(leftExp)
+	}
+
+	return leftExp
+}
+
+func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
+	expression := &ast.InfixExpression{
+		Operator: p.token,
+		Left:     left,
+	}
+
+	precedence := p.currentPrecedence()
+	p.advance()
+	right := p.parseExpression(precedence)
+	if right == nil {
+		return nil
+	}
+	expression.Right = right
+
+	return expression
+}
+
+func (p *Parser) parseStringLiteral() ast.Expression {
+	return &ast.StringLiteral{Token: p.token}
+}
+
+func (p *Parser) parseNumberLiteral() ast.Expression {
+	return &ast.NumberLiteral{Token: p.token}
 }

@@ -39,7 +39,9 @@ func TestCreateTableStatement(t *testing.T) {
     "date" date,
     "vec" "tsvector",
     "x" bigint NULL,
-    created_at timestamp with time zone
+    created_at timestamp with time zone,
+    "code" "text" DEFAULT '0001'::"text" NOT NULL,
+    expr bigint DEFAULT 1+2*3/4::"text"
 );`,
 			`CREATE TABLE "users" (
     "id" bigint NOT NULL,
@@ -56,7 +58,9 @@ func TestCreateTableStatement(t *testing.T) {
     "date" date,
     "vec" tsvector,
     "x" bigint,
-    "created_at" timestamp with time zone
+    "created_at" timestamp with time zone,
+    "code" text DEFAULT '0001'::"text" NOT NULL,
+    "expr" bigint DEFAULT 1+2*3/4::"text"
 );
 `,
 		},

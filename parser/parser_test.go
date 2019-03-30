@@ -38,6 +38,7 @@ func TestCreateTableStatement(t *testing.T) {
     "numer" numeric,
     "date" date,
     "vec" "tsvector",
+    "x" bigint NULL,
     created_at timestamp with time zone
 );`,
 			`CREATE TABLE "users" (
@@ -54,6 +55,7 @@ func TestCreateTableStatement(t *testing.T) {
     "numer" numeric,
     "date" date,
     "vec" tsvector,
+    "x" bigint,
     "created_at" timestamp with time zone
 );
 `,

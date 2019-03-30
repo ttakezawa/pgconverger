@@ -323,7 +323,7 @@ func (p *Parser) parseColumnConstraintList() (constraints []ast.ColumnConstraint
 		constraints = append(constraints, constraint)
 
 		switch p.peekToken.Type {
-		case token.Not, token.Default:
+		case token.Not, token.Null, token.Default:
 			p.advance()
 			continue
 		}
@@ -340,6 +340,9 @@ func (p *Parser) parseColumnConstraint() ast.ColumnConstraint {
 			return nil
 		}
 		return &ast.ColumnConstraintNotNull{}
+	case token.Null:
+		// NULL
+		return &ast.ColumnConstraintNull{}
 	case token.Default:
 		// DEFAULT default_expr
 		return &ast.ColumnConstraintDefault{

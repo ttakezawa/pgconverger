@@ -96,6 +96,10 @@ func (columnDefinition *ColumnDefinition) Source(w io.StringWriter) {
 	_, _ = w.WriteString(" ")
 	columnDefinition.Type.Source(w)
 	for _, constraint := range columnDefinition.ConstraintList {
+		if _, ok := constraint.(*ColumnConstraintNull); ok {
+			// When Constraint Null, skip it.
+			continue
+		}
 		_, _ = w.WriteString(" ")
 		constraint.Source(w)
 	}
@@ -117,6 +121,14 @@ type ColumnConstraintNotNull struct {
 
 func (*ColumnConstraintNotNull) Source(w io.StringWriter) {
 	_, _ = w.WriteString("NOT NULL")
+}
+
+// NULL
+type ColumnConstraintNull struct {
+}
+
+func (*ColumnConstraintNull) Source(w io.StringWriter) {
+	_, _ = w.WriteString("NULL")
 }
 
 // DEFAULT default_expr

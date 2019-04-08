@@ -81,3 +81,30 @@ func TestCreateTableStatement(t *testing.T) {
 		checkParserErrors(t, p)
 	}
 }
+
+func TestCreateIndexStatement(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{
+			`CREATE INDEX "users_name_key" ON "users" USING "btree" ("name");`,
+			`CREATE INDEX "users_name_key" ON "users" USING "btree" ("name");`,
+		},
+		{
+			`CREATE UNIQUE INDEX "users_email_phone_key" ON "users" USING "btree" ("email", "phone");`,
+			`CREATE UNIQUE INDEX "users_email_phone_key" ON "users" USING "btree" ("email", "phone");`,
+		},
+	}
+
+	for i, tt := range tests {
+		p := New(lexer.Lex(tt.input))
+		dataDefinition := p.ParseDataDefinition()
+		var builder strings.Builder
+		dataDefinition.Source(&builder)
+		if builder.String() != tt.expected {
+			t.Errorf("case%d:\n\tgot  =      %q,\n\twant =      %q", i+1, builder.String(), tt.expected)
+		}
+		checkParserErrors(t, p)
+	}
+}

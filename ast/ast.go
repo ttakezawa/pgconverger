@@ -194,3 +194,63 @@ func (bl *BooleanLiteral) Source(w io.StringWriter) {
 func (bl *BooleanLiteral) IsTrue() bool {
 	return bl.Token.Type == token.True
 }
+
+// CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] [ [ IF NOT EXISTS ] name ] ON table_name [ USING method ]
+//     ( { column_name | ( expression ) } [ COLLATE collation ] [ opclass ] [ ASC | DESC ] [ NULLS { FIRST | LAST } ] [, ...] )
+//     [ WITH ( storage_parameter = value [, ... ] ) ]
+//     [ TABLESPACE tablespace_name ]
+//     [ WHERE predicate ]
+type CreateIndexStatement struct {
+	UniqueIndex  bool
+	Concurrently bool
+	IfNotExists  bool
+	Name         *Identifier
+	TableName    *Identifier
+	UsingMethod  *Identifier
+	IndexTargets []Node // Slice of (Identifier OR Expression)
+}
+
+func (*CreateIndexStatement) statementNode() {}
+
+func (createIndexStatement *CreateIndexStatement) Source(w io.StringWriter) {
+	_, _ = w.WriteString("CREATE ")
+	if createIndexStatement.UniqueIndex {
+		_, _ = w.WriteString("UNIQUE ")
+	}
+	_, _ = w.WriteString("INDEX ")
+	if createIndexStatement.Concurrently {
+		_, _ = w.WriteString("CONCURRENTLY ")
+	}
+	if createIndexStatement.IfNotExists {
+		_, _ = w.WriteString("IF NOT EXISTS ")
+	}
+	if createIndexStatement.Name != nil {
+		createIndexStatement.Name.Source(w)
+		_, _ = w.WriteString(" ")
+	}
+	_, _ = w.WriteString("ON ")
+	createIndexStatement.TableName.Source(w)
+	_, _ = w.WriteString(" ")
+	if createIndexStatement.UsingMethod != nil {
+		_, _ = w.WriteString("USING ")
+		createIndexStatement.UsingMethod.Source(w)
+		_, _ = w.WriteString(" ")
+	}
+	_, _ = w.WriteString("(")
+	for i, indexTarget := range createIndexStatement.IndexTargets {
+		if i != 0 {
+			_, _ = w.WriteString(", ")
+		}
+		switch t := indexTarget.(type) {
+		case *Identifier:
+			t.Source(w)
+		case Expression:
+			_, _ = w.WriteString("(")
+			t.Source(w)
+			_, _ = w.WriteString(")")
+		default:
+			t.Source(w)
+		}
+	}
+	_, _ = w.WriteString(");")
+}

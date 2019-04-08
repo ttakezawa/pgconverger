@@ -171,6 +171,8 @@ func (p *Parser) parseStatement() ast.Statement {
 			return p.parseCreateSchemaStatement()
 		case token.Table:
 			return p.parseCreateTableStatement()
+		case token.Unique, token.Index:
+			return p.parseCreateIndexStatement()
 		case token.Extension, token.Sequence:
 			// Not yet implemented
 			return nil
@@ -267,6 +269,17 @@ func (p *Parser) parseColumnDefinitionList() (defs []*ast.ColumnDefinition) {
 
 func (p *Parser) parseIdentifierAsExpression() ast.Expression {
 	return p.parseIdentifier()
+}
+
+func (p *Parser) isIdentifier() bool {
+	switch {
+	case p.token.Type == token.Identifier:
+		return true
+	case !p.token.IsReserved():
+		return true
+	default:
+		return false
+	}
 }
 
 func (p *Parser) parseIdentifier() *ast.Identifier {
@@ -496,4 +509,96 @@ func (p *Parser) parseNumberLiteral() ast.Expression {
 
 func (p *Parser) parseBoolean() ast.Expression {
 	return &ast.BooleanLiteral{Token: p.token}
+}
+
+func (p *Parser) parseCreateIndexStatement() ast.Statement {
+	createIndexStatement := &ast.CreateIndexStatement{}
+
+	if p.peekToken.Type == token.Unique {
+		createIndexStatement.UniqueIndex = true
+		p.advance()
+	}
+
+	if !p.expectPeek(token.Index) {
+		return nil
+	}
+
+	if p.peekToken.Type == token.Concurrently {
+		createIndexStatement.Concurrently = true
+		p.advance()
+	}
+
+	if p.peekToken.Type == token.If {
+		createIndexStatement.Concurrently = true
+		p.advance()
+		if !p.expectPeek(token.Not) {
+			return nil
+		}
+		if !p.expectPeek(token.Exists) {
+			return nil
+		}
+	}
+
+	p.advance()
+	identifier := p.parseIdentifier()
+	if identifier == nil {
+		return nil
+	}
+	createIndexStatement.Name = identifier
+
+	if !p.expectPeek(token.On) {
+		return nil
+	}
+
+	p.advance()
+	identifier = p.parseIdentifier()
+	if identifier == nil {
+		return nil
+	}
+	createIndexStatement.TableName = identifier
+
+	if p.peekToken.Type == token.Using {
+		p.advance()
+		p.advance()
+		identifier := p.parseIdentifier()
+		if identifier == nil {
+			return nil
+		}
+		createIndexStatement.UsingMethod = identifier
+	}
+
+	p.advance()
+	indexTargets := p.parseIndexTargets()
+	if !p.expectPeek(token.RParen) {
+		return nil
+	}
+	createIndexStatement.IndexTargets = indexTargets
+	p.advance()
+
+	return createIndexStatement
+}
+
+// ( target , ... )
+func (p *Parser) parseIndexTargets() []ast.Node {
+	var indexTargets []ast.Node
+	p.advance()
+	if p.token.Type == token.RParen {
+		return indexTargets
+	}
+	for {
+		if p.isIdentifier() {
+			identifier := p.parseIdentifier()
+			indexTargets = append(indexTargets, identifier)
+		} else {
+			expr := p.parseExpression(precedenceLowest)
+			indexTargets = append(indexTargets, expr)
+		}
+		if p.peekToken.Type == token.RParen {
+			return indexTargets
+		}
+		if !p.expectPeek(token.Comma) {
+			return indexTargets
+		}
+		p.advance()
+	}
 }

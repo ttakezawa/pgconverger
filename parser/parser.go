@@ -11,6 +11,7 @@ import (
 const (
 	_ int = iota
 	precedenceLowest
+	precedenceIs
 	precedenceSum
 	precedenceProduct
 	precedenceTypecast
@@ -45,7 +46,8 @@ func New(l *lexer.Lexer) *Parser {
 	// p.registerPrefix(token.Plus, p.parsePrefixExpression)
 	p.registerPrefix(token.True, p.parseBoolean)
 	p.registerPrefix(token.False, p.parseBoolean)
-	// p.registerPrefix(token.Null, p.parseNull)
+	p.registerPrefix(token.Null, p.parseNull)
+	p.registerPrefix(token.LParen, p.parseGroupedExpression)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.Plus, p.parseInfixExpression)
@@ -53,6 +55,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.Slash, p.parseInfixExpression)
 	p.registerInfix(token.Asterisk, p.parseInfixExpression)
 	p.registerInfix(token.Typecast, p.parseInfixExpression)
+	p.registerInfix(token.Is, p.parseInfixExpression)
 
 	p.advance()
 	p.advance()
@@ -71,7 +74,9 @@ func (p *Parser) Errors() []error {
 	return p.errors
 }
 
+// https://www.postgresql.org/docs/10/sql-syntax-lexical.html#SQL-PRECEDENCE
 var precedences = map[token.TokenType]int{
+	token.Is:       precedenceIs,
 	token.Plus:     precedenceSum,
 	token.Minus:    precedenceSum,
 	token.Slash:    precedenceProduct,
@@ -509,6 +514,20 @@ func (p *Parser) parseNumberLiteral() ast.Expression {
 
 func (p *Parser) parseBoolean() ast.Expression {
 	return &ast.BooleanLiteral{Token: p.token}
+}
+
+func (p *Parser) parseNull() ast.Expression {
+	return &ast.NullLiteral{Token: p.token}
+}
+
+func (p *Parser) parseGroupedExpression() ast.Expression {
+	p.advance()
+
+	expr := p.parseExpression(precedenceLowest)
+	if !p.expectPeek(token.RParen) {
+		return nil
+	}
+	return expr
 }
 
 func (p *Parser) parseCreateIndexStatement() ast.Statement {

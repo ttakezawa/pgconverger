@@ -156,7 +156,11 @@ type InfixExpression struct {
 func (infixExpr *InfixExpression) expressionNode() {}
 func (infixExpr *InfixExpression) Source(w io.StringWriter) {
 	infixExpr.Left.Source(w)
-	_, _ = w.WriteString(infixExpr.Operator.Literal)
+	if infixExpr.Operator.Type == token.Is {
+		_, _ = w.WriteString(" IS ")
+	} else {
+		_, _ = w.WriteString(infixExpr.Operator.Literal)
+	}
 	infixExpr.Right.Source(w)
 }
 
@@ -193,6 +197,15 @@ func (bl *BooleanLiteral) Source(w io.StringWriter) {
 
 func (bl *BooleanLiteral) IsTrue() bool {
 	return bl.Token.Type == token.True
+}
+
+type NullLiteral struct {
+	Token token.Token
+}
+
+func (nl *NullLiteral) expressionNode() {}
+func (nl *NullLiteral) Source(w io.StringWriter) {
+	_, _ = w.WriteString(nl.Token.Literal)
 }
 
 // CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] [ [ IF NOT EXISTS ] name ] ON table_name [ USING method ]
@@ -248,6 +261,8 @@ func (createIndexStatement *CreateIndexStatement) Source(w io.StringWriter) {
 			_, _ = w.WriteString("(")
 			t.Source(w)
 			_, _ = w.WriteString(")")
+		case nil:
+			// nop
 		default:
 			t.Source(w)
 		}

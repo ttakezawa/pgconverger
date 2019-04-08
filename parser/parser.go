@@ -275,7 +275,7 @@ func (p *Parser) isIdentifier() bool {
 	switch {
 	case p.token.Type == token.Identifier:
 		return true
-	case !p.token.IsReserved():
+	case p.token.IsKeyword() && !p.token.IsReserved():
 		return true
 	default:
 		return false
@@ -295,7 +295,7 @@ func (p *Parser) parseIdentifier() *ast.Identifier {
 			identifier.Value = p.token.Literal
 		}
 		return &identifier
-	case !p.token.IsReserved():
+	case p.token.IsKeyword() && !p.token.IsReserved():
 		return &ast.Identifier{
 			Token: p.token,
 			Value: p.token.Literal,

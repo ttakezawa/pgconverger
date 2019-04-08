@@ -154,6 +154,12 @@ type Token struct {
 	Line    int
 }
 
+func (tok *Token) IsKeyword() bool {
+	key := strings.ToUpper(tok.Type.String())
+	_, ok := keywords[key]
+	return ok
+}
+
 func (tok *Token) IsReserved() bool {
 	key := strings.ToUpper(tok.Type.String())
 	keyword, ok := keywords[key]

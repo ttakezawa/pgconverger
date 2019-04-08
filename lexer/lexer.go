@@ -107,6 +107,10 @@ func lexFn(l *Lexer) stateFn {
 	switch {
 	case isSpace(l.char):
 		return lexSpace
+	case l.char == '-' && l.peekChar() == '-':
+		return lexCommentLine
+	case l.char == '/' && l.peekChar() == '*':
+		return lexCommentBlock
 	case l.char == '"':
 		return lexDoubleQuoteIdentifier
 	case isIdentifierStart(l.char):
@@ -138,10 +142,6 @@ func lexFn(l *Lexer) stateFn {
 	case l.char == ')':
 		l.advance()
 		l.emit(token.RParen)
-	case l.char == '-' && l.peekChar() == '-':
-		return lexCommentLine
-	case l.char == '/' && l.peekChar() == '*':
-		return lexCommentBlock
 	case l.char == eof:
 		return lexEOF
 	default:

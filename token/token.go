@@ -57,6 +57,7 @@ const (
 	Table
 	To
 	True
+	Unique
 	Update
 	Using
 	Varying
@@ -132,6 +133,7 @@ var keywords = map[string]keyword{
 	"TO":         {To, true},
 	"TRUE":       {True, true},
 	"TSVECTOR":   {Tsvector, false},
+	"UNIQUE":     {Unique, true},
 	"UPDATE":     {Update, false},
 	"USING":      {Using, true},
 	"VARYING":    {Varying, false},

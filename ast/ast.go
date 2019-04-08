@@ -208,6 +208,17 @@ func (nl *NullLiteral) Source(w io.StringWriter) {
 	_, _ = w.WriteString(nl.Token.Literal)
 }
 
+type GroupedExpression struct {
+	Expression Expression
+}
+
+func (groupedExpr *GroupedExpression) expressionNode() {}
+func (groupedExpr *GroupedExpression) Source(w io.StringWriter) {
+	_, _ = w.WriteString("(")
+	groupedExpr.Expression.Source(w)
+	_, _ = w.WriteString(")")
+}
+
 // CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] [ [ IF NOT EXISTS ] name ] ON table_name [ USING method ]
 //     ( { column_name | ( expression ) } [ COLLATE collation ] [ opclass ] [ ASC | DESC ] [ NULLS { FIRST | LAST } ] [, ...] )
 //     [ WITH ( storage_parameter = value [, ... ] ) ]
@@ -254,17 +265,8 @@ func (createIndexStatement *CreateIndexStatement) Source(w io.StringWriter) {
 		if i != 0 {
 			_, _ = w.WriteString(", ")
 		}
-		switch t := indexTarget.(type) {
-		case *Identifier:
-			t.Source(w)
-		case Expression:
-			_, _ = w.WriteString("(")
-			t.Source(w)
-			_, _ = w.WriteString(")")
-		case nil:
-			// nop
-		default:
-			t.Source(w)
+		if indexTarget != nil {
+			indexTarget.Source(w)
 		}
 	}
 	_, _ = w.WriteString(");")

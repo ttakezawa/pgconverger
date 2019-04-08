@@ -522,12 +522,11 @@ func (p *Parser) parseNull() ast.Expression {
 
 func (p *Parser) parseGroupedExpression() ast.Expression {
 	p.advance()
-
 	expr := p.parseExpression(precedenceLowest)
 	if !p.expectPeek(token.RParen) {
 		return nil
 	}
-	return expr
+	return &ast.GroupedExpression{Expression: expr}
 }
 
 func (p *Parser) parseCreateIndexStatement() ast.Statement {

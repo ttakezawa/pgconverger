@@ -44,6 +44,7 @@ const (
 	Increment
 	Index
 	Insert
+	Is
 	Maxvalue
 	Minvalue
 	No
@@ -116,6 +117,7 @@ var keywords = map[string]keyword{
 	"INDEX":        {Index, false},
 	"INSERT":       {Insert, false},
 	"INTEGER":      {Integer, false},
+	"IS":           {Is, true}, // reserved (can be function or type)
 	"JSONB":        {Jsonb, false},
 	"MAXVALUE":     {Maxvalue, false},
 	"MINVALUE":     {Minvalue, false},

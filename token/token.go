@@ -36,6 +36,7 @@ const (
 	Constraint
 	Create
 	Default
+	Exists
 	Extension
 	False
 	Grant
@@ -106,10 +107,11 @@ var keywords = map[string]keyword{
 	"CREATE":       {Create, true},
 	"DATE":         {Date, false},
 	"DEFAULT":      {Default, true},
+	"EXISTS":       {Exists, false}, // non-reserved (cannot be function or type)
 	"EXTENSION":    {Extension, false},
 	"FALSE":        {False, true},
 	"GRANT":        {Grant, true},
-	"IF": {If, false}
+	"IF":           {If, false},
 	"INCREMENT":    {Increment, false},
 	"INDEX":        {Index, false},
 	"INSERT":       {Insert, false},

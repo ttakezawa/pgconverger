@@ -39,6 +39,7 @@ const (
 	Extension
 	False
 	Grant
+	If
 	Increment
 	Index
 	Insert
@@ -108,6 +109,7 @@ var keywords = map[string]keyword{
 	"EXTENSION":    {Extension, false},
 	"FALSE":        {False, true},
 	"GRANT":        {Grant, true},
+	"IF": {If, false}
 	"INCREMENT":    {Increment, false},
 	"INDEX":        {Index, false},
 	"INSERT":       {Insert, false},

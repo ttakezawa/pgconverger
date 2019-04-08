@@ -171,11 +171,20 @@ func (p *Parser) parseStatement() ast.Statement {
 			return p.parseCreateSchemaStatement()
 		case token.Table:
 			return p.parseCreateTableStatement()
+		case token.Extension, token.Sequence:
+			// Not yet implemented
+			return nil
 		default:
 			p.errorf(p.peekToken.Line, "unknown token: CREATE %s", p.peekToken.Literal)
 		}
+	case token.Alter:
+		switch p.peekToken.Type {
+		case token.Schema:
+			// Not yet implemented
+			return nil
+		}
 	case token.Set, token.Comment:
-		// Ignore
+		// Not yet implemented
 		return nil
 	default:
 		p.errorf(p.token.Line, "unknown token: %s", p.token.Literal)

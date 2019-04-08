@@ -60,6 +60,7 @@ const (
 	Update
 	Using
 	Varying
+	View
 	With
 	Zone
 
@@ -134,6 +135,7 @@ var keywords = map[string]keyword{
 	"UPDATE":     {Update, false},
 	"USING":      {Using, true},
 	"VARYING":    {Varying, false},
+	"VIEW":       {View, false},
 	"WITH":       {With, true},
 	"ZONE":       {Zone, false},
 }

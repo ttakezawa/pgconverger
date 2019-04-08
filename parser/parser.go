@@ -174,6 +174,9 @@ func (p *Parser) parseStatement() ast.Statement {
 		case token.Extension, token.Sequence:
 			// Not yet implemented
 			return nil
+		case token.View:
+			// Not yet implemented
+			return nil
 		default:
 			p.errorf(p.peekToken.Line, "unknown token: CREATE %s", p.peekToken.Literal)
 		}

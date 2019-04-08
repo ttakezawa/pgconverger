@@ -35,6 +35,7 @@ const (
 	Constraint
 	Create
 	Default
+	Extension
 	False
 	Grant
 	Increment
@@ -83,6 +84,7 @@ type keyword struct {
 	Reserved bool
 }
 
+// https://www.postgresql.org/docs/10/sql-keywords-appendix.html
 var keywords = map[string]keyword{
 	"ADD":        {Add, false},
 	"ALTER":      {Alter, false},
@@ -99,6 +101,7 @@ var keywords = map[string]keyword{
 	"CREATE":     {Create, true},
 	"DATE":       {Date, false},
 	"DEFAULT":    {Default, true},
+	"EXTENSION":  {Extension, false},
 	"FALSE":      {False, true},
 	"GRANT":      {Grant, true},
 	"INCREMENT":  {Increment, false},

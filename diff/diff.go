@@ -26,14 +26,14 @@ type Diff struct {
 	desiredErrors []error
 }
 
-func Process(source fileReader, desired fileReader) (error, *Diff) {
+func Process(source fileReader, desired fileReader) (*Diff, error) {
 	df := &Diff{
 		source:  source,
 		desired: desired,
 	}
 	df.sourceErrors, df.sourceDDL = parseOneSide(df.source)
 	df.desiredErrors, df.desiredDDL = parseOneSide(df.desired)
-	return df.ErrorOrNil(), df
+	return df, df.ErrorOrNil()
 }
 
 func parseOneSide(reader fileReader) (errs []error, ddl *ast.DataDefinition) {

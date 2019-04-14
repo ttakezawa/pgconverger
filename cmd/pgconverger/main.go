@@ -29,7 +29,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	err, df := diff.Process(sourceFile, desiredFile)
+	df, err := diff.Process(sourceFile, desiredFile)
 	if err != nil {
 		fmt.Printf("%+v", err)
 		return

@@ -7,7 +7,7 @@ import (
 )
 
 type Node interface {
-	Source(w io.StringWriter)
+	WriteStringTo(w io.StringWriter)
 }
 
 type Statement interface {
@@ -26,7 +26,7 @@ type Identifier struct {
 }
 
 func (identifier *Identifier) expressionNode() {}
-func (identifier *Identifier) Source(w io.StringWriter) {
+func (identifier *Identifier) WriteStringTo(w io.StringWriter) {
 	_, _ = w.WriteString(`"`)
 	_, _ = w.WriteString(identifier.Value)
 	_, _ = w.WriteString(`"`)
@@ -36,12 +36,12 @@ type DataDefinition struct {
 	StatementList []Statement
 }
 
-func (dataDefinition *DataDefinition) Source(w io.StringWriter) {
+func (dataDefinition *DataDefinition) WriteStringTo(w io.StringWriter) {
 	for i, statement := range dataDefinition.StatementList {
 		if i > 0 {
 			_, _ = w.WriteString("\n")
 		}
-		statement.Source(w)
+		statement.WriteStringTo(w)
 	}
 }
 
@@ -51,9 +51,9 @@ type CreateSchemaStatement struct {
 
 func (*CreateSchemaStatement) statementNode() {}
 
-func (createSchemaStatement *CreateSchemaStatement) Source(w io.StringWriter) {
+func (createSchemaStatement *CreateSchemaStatement) WriteStringTo(w io.StringWriter) {
 	_, _ = w.WriteString("CREATE SCHEMA ")
-	createSchemaStatement.Name.Source(w)
+	createSchemaStatement.Name.WriteStringTo(w)
 	_, _ = w.WriteString(";\n")
 }
 
@@ -75,14 +75,14 @@ type CreateTableStatement struct {
 
 func (*CreateTableStatement) statementNode() {}
 
-func (createTableStatement *CreateTableStatement) Source(w io.StringWriter) {
+func (createTableStatement *CreateTableStatement) WriteStringTo(w io.StringWriter) {
 	_, _ = w.WriteString("CREATE TABLE ")
-	createTableStatement.TableName.Source(w)
+	createTableStatement.TableName.WriteStringTo(w)
 	_, _ = w.WriteString(" (\n")
 
 	for i, columnDefinition := range createTableStatement.ColumnDefinitionList {
 		_, _ = w.WriteString("    ")
-		columnDefinition.Source(w)
+		columnDefinition.WriteStringTo(w)
 		if i < len(createTableStatement.ColumnDefinitionList)-1 {
 			_, _ = w.WriteString(",")
 		}
@@ -97,17 +97,17 @@ type ColumnDefinition struct {
 	ConstraintList []ColumnConstraint
 }
 
-func (columnDefinition *ColumnDefinition) Source(w io.StringWriter) {
-	columnDefinition.Name.Source(w)
+func (columnDefinition *ColumnDefinition) WriteStringTo(w io.StringWriter) {
+	columnDefinition.Name.WriteStringTo(w)
 	_, _ = w.WriteString(" ")
-	columnDefinition.Type.Source(w)
+	columnDefinition.Type.WriteStringTo(w)
 	for _, constraint := range columnDefinition.ConstraintList {
 		if _, ok := constraint.(*ColumnConstraintNull); ok {
 			// When Constraint Null, skip it.
 			continue
 		}
 		_, _ = w.WriteString(" ")
-		constraint.Source(w)
+		constraint.WriteStringTo(w)
 	}
 }
 
@@ -125,7 +125,7 @@ type ColumnConstraint interface {
 type ColumnConstraintNotNull struct {
 }
 
-func (*ColumnConstraintNotNull) Source(w io.StringWriter) {
+func (*ColumnConstraintNotNull) WriteStringTo(w io.StringWriter) {
 	_, _ = w.WriteString("NOT NULL")
 }
 
@@ -133,7 +133,7 @@ func (*ColumnConstraintNotNull) Source(w io.StringWriter) {
 type ColumnConstraintNull struct {
 }
 
-func (*ColumnConstraintNull) Source(w io.StringWriter) {
+func (*ColumnConstraintNull) WriteStringTo(w io.StringWriter) {
 	_, _ = w.WriteString("NULL")
 }
 
@@ -142,9 +142,9 @@ type ColumnConstraintDefault struct {
 	Expr Expression
 }
 
-func (columnConstraintDefault *ColumnConstraintDefault) Source(w io.StringWriter) {
+func (columnConstraintDefault *ColumnConstraintDefault) WriteStringTo(w io.StringWriter) {
 	_, _ = w.WriteString("DEFAULT ")
-	columnConstraintDefault.Expr.Source(w)
+	columnConstraintDefault.Expr.WriteStringTo(w)
 }
 
 type InfixExpression struct {
@@ -154,14 +154,14 @@ type InfixExpression struct {
 }
 
 func (infixExpr *InfixExpression) expressionNode() {}
-func (infixExpr *InfixExpression) Source(w io.StringWriter) {
-	infixExpr.Left.Source(w)
+func (infixExpr *InfixExpression) WriteStringTo(w io.StringWriter) {
+	infixExpr.Left.WriteStringTo(w)
 	if infixExpr.Operator.Type == token.Is {
 		_, _ = w.WriteString(" IS ")
 	} else {
 		_, _ = w.WriteString(infixExpr.Operator.Literal)
 	}
-	infixExpr.Right.Source(w)
+	infixExpr.Right.WriteStringTo(w)
 }
 
 type StringLiteral struct {
@@ -169,7 +169,7 @@ type StringLiteral struct {
 }
 
 func (il *StringLiteral) expressionNode() {}
-func (il *StringLiteral) Source(w io.StringWriter) {
+func (il *StringLiteral) WriteStringTo(w io.StringWriter) {
 	_, _ = w.WriteString(il.Token.Literal)
 }
 
@@ -178,7 +178,7 @@ type NumberLiteral struct {
 }
 
 func (il *NumberLiteral) expressionNode() {}
-func (il *NumberLiteral) Source(w io.StringWriter) {
+func (il *NumberLiteral) WriteStringTo(w io.StringWriter) {
 	_, _ = w.WriteString(il.Token.Literal)
 }
 
@@ -187,7 +187,7 @@ type BooleanLiteral struct {
 }
 
 func (bl *BooleanLiteral) expressionNode() {}
-func (bl *BooleanLiteral) Source(w io.StringWriter) {
+func (bl *BooleanLiteral) WriteStringTo(w io.StringWriter) {
 	if bl.IsTrue() {
 		_, _ = w.WriteString("TRUE")
 	} else {
@@ -204,7 +204,7 @@ type NullLiteral struct {
 }
 
 func (nl *NullLiteral) expressionNode() {}
-func (nl *NullLiteral) Source(w io.StringWriter) {
+func (nl *NullLiteral) WriteStringTo(w io.StringWriter) {
 	_, _ = w.WriteString(nl.Token.Literal)
 }
 
@@ -213,9 +213,9 @@ type GroupedExpression struct {
 }
 
 func (groupedExpr *GroupedExpression) expressionNode() {}
-func (groupedExpr *GroupedExpression) Source(w io.StringWriter) {
+func (groupedExpr *GroupedExpression) WriteStringTo(w io.StringWriter) {
 	_, _ = w.WriteString("(")
-	groupedExpr.Expression.Source(w)
+	groupedExpr.Expression.WriteStringTo(w)
 	_, _ = w.WriteString(")")
 }
 
@@ -236,7 +236,7 @@ type CreateIndexStatement struct {
 
 func (*CreateIndexStatement) statementNode() {}
 
-func (createIndexStatement *CreateIndexStatement) Source(w io.StringWriter) {
+func (createIndexStatement *CreateIndexStatement) WriteStringTo(w io.StringWriter) {
 	_, _ = w.WriteString("CREATE ")
 	if createIndexStatement.UniqueIndex {
 		_, _ = w.WriteString("UNIQUE ")
@@ -249,15 +249,15 @@ func (createIndexStatement *CreateIndexStatement) Source(w io.StringWriter) {
 		_, _ = w.WriteString("IF NOT EXISTS ")
 	}
 	if createIndexStatement.Name != nil {
-		createIndexStatement.Name.Source(w)
+		createIndexStatement.Name.WriteStringTo(w)
 		_, _ = w.WriteString(" ")
 	}
 	_, _ = w.WriteString("ON ")
-	createIndexStatement.TableName.Source(w)
+	createIndexStatement.TableName.WriteStringTo(w)
 	_, _ = w.WriteString(" ")
 	if createIndexStatement.UsingMethod != nil {
 		_, _ = w.WriteString("USING ")
-		createIndexStatement.UsingMethod.Source(w)
+		createIndexStatement.UsingMethod.WriteStringTo(w)
 		_, _ = w.WriteString(" ")
 	}
 	_, _ = w.WriteString("(")
@@ -266,7 +266,7 @@ func (createIndexStatement *CreateIndexStatement) Source(w io.StringWriter) {
 			_, _ = w.WriteString(", ")
 		}
 		if indexTarget != nil {
-			indexTarget.Source(w)
+			indexTarget.WriteStringTo(w)
 		}
 	}
 	_, _ = w.WriteString(");")

@@ -74,7 +74,7 @@ func TestCreateTableStatement(t *testing.T) {
 		p := New(lexer.Lex(tt.input))
 		dataDefinition := p.ParseDataDefinition()
 		var builder strings.Builder
-		dataDefinition.Source(&builder)
+		dataDefinition.WriteStringTo(&builder)
 		if builder.String() != tt.expected {
 			t.Errorf("case%d:\n\tgot  =      %q,\n\twant =      %q", i+1, builder.String(), tt.expected)
 		}
@@ -113,7 +113,7 @@ func TestCreateIndexStatement(t *testing.T) {
 		p := New(lexer.Lex(tt.input))
 		dataDefinition := p.ParseDataDefinition()
 		var builder strings.Builder
-		dataDefinition.Source(&builder)
+		dataDefinition.WriteStringTo(&builder)
 		if builder.String() != tt.expected {
 			t.Errorf("case%d:\n\tgot  =      %q,\n\twant =      %q", i+1, builder.String(), tt.expected)
 		}

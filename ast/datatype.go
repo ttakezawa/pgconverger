@@ -15,36 +15,36 @@ type DataTypeInteger struct {
 	Token token.Token
 }
 
-func (*DataTypeInteger) Name() DataTypeName       { return Integer }
-func (*DataTypeInteger) Source(w io.StringWriter) { _, _ = w.WriteString("integer") }
+func (*DataTypeInteger) Name() DataTypeName              { return Integer }
+func (*DataTypeInteger) WriteStringTo(w io.StringWriter) { _, _ = w.WriteString("integer") }
 
 type DataTypeBigint struct {
 	Token token.Token
 }
 
-func (*DataTypeBigint) Name() DataTypeName       { return Bigint }
-func (*DataTypeBigint) Source(w io.StringWriter) { _, _ = w.WriteString("bigint") }
+func (*DataTypeBigint) Name() DataTypeName              { return Bigint }
+func (*DataTypeBigint) WriteStringTo(w io.StringWriter) { _, _ = w.WriteString("bigint") }
 
 type DataTypeBigserial struct{}
 
-func (*DataTypeBigserial) Name() DataTypeName       { return Bigserial }
-func (*DataTypeBigserial) Source(w io.StringWriter) { _, _ = w.WriteString("bigserial") }
+func (*DataTypeBigserial) Name() DataTypeName              { return Bigserial }
+func (*DataTypeBigserial) WriteStringTo(w io.StringWriter) { _, _ = w.WriteString("bigserial") }
 
 type DataTypeBoolean struct{}
 
-func (*DataTypeBoolean) Name() DataTypeName       { return Boolean }
-func (*DataTypeBoolean) Source(w io.StringWriter) { _, _ = w.WriteString("boolean") }
+func (*DataTypeBoolean) Name() DataTypeName              { return Boolean }
+func (*DataTypeBoolean) WriteStringTo(w io.StringWriter) { _, _ = w.WriteString("boolean") }
 
 type DataTypeNumeric struct{}
 
-func (*DataTypeNumeric) Name() DataTypeName       { return Numeric }
-func (*DataTypeNumeric) Source(w io.StringWriter) { _, _ = w.WriteString("numeric") }
+func (*DataTypeNumeric) Name() DataTypeName              { return Numeric }
+func (*DataTypeNumeric) WriteStringTo(w io.StringWriter) { _, _ = w.WriteString("numeric") }
 
 type DataTypeOptionLength struct {
 	token.Token
 }
 
-func (dataTypeOptionLength *DataTypeOptionLength) Source(w io.StringWriter) {
+func (dataTypeOptionLength *DataTypeOptionLength) WriteStringTo(w io.StringWriter) {
 	_, _ = w.WriteString("(")
 	_, _ = w.WriteString(dataTypeOptionLength.Literal)
 	_, _ = w.WriteString(")")
@@ -56,47 +56,47 @@ type DataTypeCharacter struct {
 }
 
 func (*DataTypeCharacter) Name() DataTypeName { return Character }
-func (dataTypeCharacter *DataTypeCharacter) Source(w io.StringWriter) {
+func (dataTypeCharacter *DataTypeCharacter) WriteStringTo(w io.StringWriter) {
 	_, _ = w.WriteString("character")
 	if dataTypeCharacter.Varying {
 		_, _ = w.WriteString(" varying")
 	}
 	if dataTypeCharacter.OptionLength != nil {
-		dataTypeCharacter.OptionLength.Source(w)
+		dataTypeCharacter.OptionLength.WriteStringTo(w)
 	}
 }
 
 type DataTypeText struct{}
 
-func (*DataTypeText) Name() DataTypeName       { return Text }
-func (*DataTypeText) Source(w io.StringWriter) { _, _ = w.WriteString("text") }
+func (*DataTypeText) Name() DataTypeName              { return Text }
+func (*DataTypeText) WriteStringTo(w io.StringWriter) { _, _ = w.WriteString("text") }
 
 type DataTypeJsonb struct{}
 
-func (*DataTypeJsonb) Name() DataTypeName       { return Jsonb }
-func (*DataTypeJsonb) Source(w io.StringWriter) { _, _ = w.WriteString("jsonb") }
+func (*DataTypeJsonb) Name() DataTypeName              { return Jsonb }
+func (*DataTypeJsonb) WriteStringTo(w io.StringWriter) { _, _ = w.WriteString("jsonb") }
 
 type DataTypeBytea struct{}
 
-func (*DataTypeBytea) Name() DataTypeName       { return Bytea }
-func (*DataTypeBytea) Source(w io.StringWriter) { _, _ = w.WriteString("bytea") }
+func (*DataTypeBytea) Name() DataTypeName              { return Bytea }
+func (*DataTypeBytea) WriteStringTo(w io.StringWriter) { _, _ = w.WriteString("bytea") }
 
 type DataTypeTsvector struct{}
 
-func (*DataTypeTsvector) Name() DataTypeName       { return Tsvector }
-func (*DataTypeTsvector) Source(w io.StringWriter) { _, _ = w.WriteString("tsvector") }
+func (*DataTypeTsvector) Name() DataTypeName              { return Tsvector }
+func (*DataTypeTsvector) WriteStringTo(w io.StringWriter) { _, _ = w.WriteString("tsvector") }
 
 type DataTypeDate struct{}
 
-func (*DataTypeDate) Name() DataTypeName       { return Date }
-func (*DataTypeDate) Source(w io.StringWriter) { _, _ = w.WriteString("date") }
+func (*DataTypeDate) Name() DataTypeName              { return Date }
+func (*DataTypeDate) WriteStringTo(w io.StringWriter) { _, _ = w.WriteString("date") }
 
 type DataTypeTimestamp struct {
 	WithTimeZone bool
 }
 
 func (*DataTypeTimestamp) Name() DataTypeName { return Timestamp }
-func (dataTypeTimestamp *DataTypeTimestamp) Source(w io.StringWriter) {
+func (dataTypeTimestamp *DataTypeTimestamp) WriteStringTo(w io.StringWriter) {
 	_, _ = w.WriteString("timestamp")
 	if dataTypeTimestamp.WithTimeZone {
 		_, _ = w.WriteString(" with time zone")

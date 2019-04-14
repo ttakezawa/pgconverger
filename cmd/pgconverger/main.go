@@ -41,6 +41,6 @@ func main() {
 	}
 
 	var builder strings.Builder
-	dataDefinition.Source(&builder)
+	dataDefinition.WriteStringTo(&builder)
 	log.Printf("\n%s", builder.String())
 }

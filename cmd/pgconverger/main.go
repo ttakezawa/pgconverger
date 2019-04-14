@@ -31,7 +31,7 @@ func main() {
 
 	err, df := diff.Process(sourceFile, desiredFile)
 	if err != nil {
-		log.Printf("%+v", err)
+		fmt.Printf("%+v", err)
 		return
 	}
 

@@ -2,12 +2,19 @@ package ast
 
 import (
 	"io"
+	"strings"
 
 	"github.com/ttakezawa/pgconverger/token"
 )
 
 type Node interface {
 	WriteStringTo(w io.StringWriter)
+}
+
+func FormatNode(node Node) string {
+	var builder strings.Builder
+	node.WriteStringTo(&builder)
+	return builder.String()
 }
 
 type Statement interface {

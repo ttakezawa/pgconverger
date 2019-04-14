@@ -36,13 +36,13 @@ func Process(source fileReader, desired fileReader) (error, *Diff) {
 	return df.ErrorOrNil(), df
 }
 
-func parseOneSide(reader io.Reader) (errs []error, ddl *ast.DataDefinition) {
+func parseOneSide(reader fileReader) (errs []error, ddl *ast.DataDefinition) {
 	input, err := ioutil.ReadAll(reader)
 	if err != nil {
 		errs = append(errs, err)
 		return
 	}
-	p := parser.New(lexer.Lex(string(input)))
+	p := parser.New(lexer.Lex(reader.Name(), string(input)))
 	ddl = p.ParseDataDefinition()
 	errs = append(errs, p.Errors()...)
 	return

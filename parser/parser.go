@@ -70,6 +70,10 @@ func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
 	p.infixParseFns[tokenType] = fn
 }
 
+func (p *Parser) InputName() string {
+	return p.l.InputName()
+}
+
 func (p *Parser) Errors() []error {
 	return p.errors
 }
@@ -104,19 +108,21 @@ func (p *Parser) advance() {
 }
 
 type parseError struct {
+	p *Parser
 	error
 	line int
 }
 
 func (e *parseError) Error() string {
-	return fmt.Sprintf("<input>:%d: %s", e.line, e.error.Error())
+	return fmt.Sprintf("%s:%d: %s", e.p.InputName(), e.line, e.error.Error())
 }
 
 func (p *Parser) errorf(line int, format string, a ...interface{}) {
 	p.errors = append(p.errors,
 		&parseError{
-			fmt.Errorf(format, a...),
-			line,
+			p:     p,
+			error: fmt.Errorf(format, a...),
+			line:  line,
 		},
 	)
 }

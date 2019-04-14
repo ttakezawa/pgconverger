@@ -12,6 +12,7 @@ const eof = -1
 type stateFn func(*Lexer) stateFn
 
 type Lexer struct {
+	inputName    string
 	input        string
 	position     int
 	readPosition int
@@ -25,8 +26,9 @@ type Lexer struct {
 	state  stateFn
 }
 
-func newLexer(input string) *Lexer {
+func newLexer(inputName, input string) *Lexer {
 	return &Lexer{
+		inputName: inputName,
 		input:     input,
 		tokens:    make(chan token.Token),
 		line:      1,
@@ -34,11 +36,15 @@ func newLexer(input string) *Lexer {
 	}
 }
 
-func Lex(input string) *Lexer {
-	l := newLexer(input)
+func Lex(inputName, input string) *Lexer {
+	l := newLexer(inputName, input)
 	l.advance()
 	go l.run()
 	return l
+}
+
+func (l *Lexer) InputName() string {
+	return l.inputName
 }
 
 func (l *Lexer) run() {

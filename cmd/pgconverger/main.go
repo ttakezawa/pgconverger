@@ -2,13 +2,11 @@ package main
 
 import (
 	"flag"
-	"io/ioutil"
+	"fmt"
 	"log"
 	"os"
-	"strings"
 
-	"github.com/ttakezawa/pgconverger/lexer"
-	"github.com/ttakezawa/pgconverger/parser"
+	"github.com/ttakezawa/pgconverger/diff"
 )
 
 func main() {
@@ -21,26 +19,21 @@ func main() {
 	log.Printf("source:  %s", *source)
 	log.Printf("desired: %s", *desired)
 
+	sourceFile, err := os.Open(*source)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
 	desiredFile, err := os.Open(*desired)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	desiredFileData, err := ioutil.ReadAll(desiredFile)
+	err, df := diff.Process(sourceFile, desiredFile)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Printf("%+v", err)
+		return
 	}
 
-	p := parser.New(lexer.Lex(string(desiredFileData)))
-	dataDefinition := p.ParseDataDefinition()
-
-	if errors := p.Errors(); errors != nil {
-		for _, err := range errors {
-			log.Print(err.Error())
-		}
-	}
-
-	var builder strings.Builder
-	dataDefinition.WriteStringTo(&builder)
-	log.Printf("\n%s", builder.String())
+	fmt.Println(df)
 }

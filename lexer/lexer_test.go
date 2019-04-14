@@ -32,7 +32,7 @@ func Test_lexer_readChar(t *testing.T) {
 	}
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("case%d", i+1), func(t *testing.T) {
-			l := newLexer(tt.input)
+			l := newLexer("<input>", tt.input)
 			for _, expect := range tt.expects {
 				l.advance()
 				if expect.char != l.char {
@@ -176,7 +176,7 @@ ALTER TABLE ONLY "users" ALTER COLUMN "id" SET DEFAULT "nextval"('"users_id_seq"
 	}
 
 	for i, tt := range tests {
-		l := Lex(tt.input)
+		l := Lex("<input>", tt.input)
 		for j, want := range tt.wants {
 			got := l.NextToken()
 			if got.Type != want.typ {

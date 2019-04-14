@@ -71,7 +71,7 @@ func TestCreateTableStatement(t *testing.T) {
 	}
 
 	for i, tt := range tests {
-		p := New(lexer.Lex(tt.input))
+		p := New(lexer.Lex("<input>", tt.input))
 		dataDefinition := p.ParseDataDefinition()
 		var builder strings.Builder
 		dataDefinition.WriteStringTo(&builder)
@@ -110,7 +110,7 @@ func TestCreateIndexStatement(t *testing.T) {
 	}
 
 	for i, tt := range tests {
-		p := New(lexer.Lex(tt.input))
+		p := New(lexer.Lex("<input>", tt.input))
 		dataDefinition := p.ParseDataDefinition()
 		var builder strings.Builder
 		dataDefinition.WriteStringTo(&builder)

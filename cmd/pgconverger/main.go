@@ -13,25 +13,25 @@ import (
 
 func main() {
 	var (
-		from = flag.String("from", "", "compare {FROM} to {TO}")
-		to   = flag.String("to", "", "compare {FROM} to {TO}")
+		source  = flag.String("source", "", "compare {SOURCE} to {DESIRED}")
+		desired = flag.String("desired", "", "compare {SOURCE} to {DESIRED}")
 	)
 	flag.Parse()
 
-	log.Printf("from: %s", *from)
-	log.Printf("to:   %s", *to)
+	log.Printf("source:  %s", *source)
+	log.Printf("desired: %s", *desired)
 
-	toFile, err := os.Open(*to)
+	desiredFile, err := os.Open(*desired)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	toFileData, err := ioutil.ReadAll(toFile)
+	desiredFileData, err := ioutil.ReadAll(desiredFile)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	p := parser.New(lexer.Lex(string(toFileData)))
+	p := parser.New(lexer.Lex(string(desiredFileData)))
 	dataDefinition := p.ParseDataDefinition()
 
 	if errors := p.Errors(); errors != nil {

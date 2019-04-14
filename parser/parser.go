@@ -202,7 +202,9 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.Grant:
 		// Not yet implemented
 		return nil
-	case token.Set, token.Comment:
+	case token.Set:
+		return p.parseSetStatement()
+	case token.Comment:
 		// Not yet implemented
 		return nil
 	default:
@@ -625,4 +627,40 @@ func (p *Parser) parseIndexTargets() []ast.Node {
 		}
 		p.advance()
 	}
+}
+
+// SET name = { value | 'value' | DEFAULT }
+func (p *Parser) parseSetStatement() ast.Statement {
+	setStatement := &ast.SetStatement{}
+
+	if !p.expectPeek(token.Identifier) {
+		return nil
+	}
+	setStatement.Name = p.parseIdentifier()
+
+	if setStatement.Name.Value != "search_path" {
+		// `SET search_path` is only implemented.
+		return nil
+	}
+
+	if !p.expectPeek(token.Equal) {
+		return nil
+	}
+
+	p.advance()
+	for {
+		expr := p.parseExpression(precedenceLowest)
+		if expr == nil {
+			return nil
+		}
+		setStatement.Values = append(setStatement.Values, expr)
+
+		if p.peekToken.Type != token.Comma {
+			break
+		}
+		p.advance()
+		p.advance()
+	}
+
+	return setStatement
 }

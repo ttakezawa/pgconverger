@@ -21,6 +21,7 @@ const (
 	Comma
 	LParen
 	RParen
+	Equal
 	Plus
 	Minus
 	Asterisk

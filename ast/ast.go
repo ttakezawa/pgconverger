@@ -271,3 +271,28 @@ func (createIndexStatement *CreateIndexStatement) WriteStringTo(w io.StringWrite
 	}
 	_, _ = w.WriteString(");")
 }
+
+type SetStatement struct {
+	Name   *Identifier
+	Values []Expression
+}
+
+func (*SetStatement) statementNode() {}
+
+func (setStatement *SetStatement) WriteStringTo(w io.StringWriter) {
+	_, _ = w.WriteString("SET ")
+	_, _ = w.WriteString(setStatement.Name.Value)
+	_, _ = w.WriteString(" = ")
+	for i, value := range setStatement.Values {
+		if i != 0 {
+			_, _ = w.WriteString(", ")
+		}
+		ident, ok := value.(*Identifier)
+		if ok && ident.Value == "pg_catalog" {
+			_, _ = w.WriteString(ident.Value)
+		} else {
+			value.WriteStringTo(w)
+		}
+	}
+	_, _ = w.WriteString(";")
+}

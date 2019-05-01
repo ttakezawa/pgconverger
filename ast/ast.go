@@ -303,3 +303,44 @@ func (setStatement *SetStatement) WriteStringTo(w io.StringWriter) {
 	}
 	_, _ = w.WriteString(";")
 }
+
+// CREATE SEQUENCE "users_id_seq"
+//     START WITH 1
+//     INCREMENT BY 1
+//     NO MINVALUE
+//     NO MAXVALUE
+//     CACHE 1;
+type CreateSequenceStatement struct {
+	Name        *Identifier
+	StartWith   Expression
+	IncrementBy Expression
+	NoMinvalue  bool
+	NoMaxvalue  bool
+	Cache       Expression
+}
+
+func (*CreateSequenceStatement) statementNode() {}
+
+func (createSequenceStatement *CreateSequenceStatement) WriteStringTo(w io.StringWriter) {
+	_, _ = w.WriteString("CREATE SEQUENCE ")
+	createSequenceStatement.Name.WriteStringTo(w)
+	if createSequenceStatement.StartWith != nil {
+		_, _ = w.WriteString("\n    START WITH ")
+		createSequenceStatement.StartWith.WriteStringTo(w)
+	}
+	if createSequenceStatement.IncrementBy != nil {
+		_, _ = w.WriteString("\n    INCREMENT BY ")
+		createSequenceStatement.IncrementBy.WriteStringTo(w)
+	}
+	if createSequenceStatement.NoMinvalue {
+		_, _ = w.WriteString("\n    NO MINVALUE")
+	}
+	if createSequenceStatement.NoMaxvalue {
+		_, _ = w.WriteString("\n    NO MAXVALUE")
+	}
+	if createSequenceStatement.Cache != nil {
+		_, _ = w.WriteString("\n    CACHE ")
+		createSequenceStatement.Cache.WriteStringTo(w)
+	}
+	_, _ = w.WriteString(";")
+}

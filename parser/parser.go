@@ -184,7 +184,9 @@ func (p *Parser) parseStatement() ast.Statement {
 			return p.parseCreateTableStatement()
 		case token.Unique, token.Index:
 			return p.parseCreateIndexStatement()
-		case token.Extension, token.Sequence:
+		case token.Sequence:
+			return p.parseCreateSequenceStatement()
+		case token.Extension:
 			// Not yet implemented
 			return nil
 		case token.View:
@@ -602,6 +604,65 @@ func (p *Parser) parseCreateIndexStatement() ast.Statement {
 	p.advance()
 
 	return createIndexStatement
+}
+
+// CREATE SEQUENCE "users_id_seq"
+//     START WITH 1
+//     INCREMENT BY 1
+//     NO MINVALUE
+//     NO MAXVALUE
+//     CACHE 1;
+func (p *Parser) parseCreateSequenceStatement() ast.Statement {
+	createSequenceStatement := &ast.CreateSequenceStatement{}
+
+	if !p.expectPeek(token.Sequence) {
+		return nil
+	}
+
+	p.advance()
+	identifier := p.parseIdentifier()
+	if identifier == nil {
+		return nil
+	}
+	createSequenceStatement.Name = identifier
+
+	for p.peekToken.Type != token.Semicolon && p.peekToken.Type != token.EOF {
+		p.advance()
+		p.parseCreateSequenceOption(createSequenceStatement)
+	}
+
+	return createSequenceStatement
+}
+
+func (p *Parser) parseCreateSequenceOption(createSequenceStatement *ast.CreateSequenceStatement) {
+	switch p.token.Type {
+	case token.Start:
+		if p.peekToken.Type == token.With {
+			p.advance()
+		}
+		p.advance()
+		createSequenceStatement.StartWith = p.parseNumberLiteral()
+	case token.Increment:
+		if !p.expectPeek(token.By) {
+			return
+		}
+		p.advance()
+		createSequenceStatement.IncrementBy = p.parseNumberLiteral()
+	case token.No:
+		p.advance()
+		switch p.token.Type {
+		case token.Maxvalue:
+			createSequenceStatement.NoMaxvalue = true
+		case token.Minvalue:
+			createSequenceStatement.NoMinvalue = true
+		default:
+			p.errorf(p.token.Line, "expected MAXVALUE or MINVALUE, found %s", p.token.Literal)
+			return
+		}
+	case token.Cache:
+		p.advance()
+		createSequenceStatement.Cache = p.parseNumberLiteral()
+	}
 }
 
 // ( target , ... )

@@ -147,3 +147,36 @@ func TestSetStatement(t *testing.T) {
 		checkParserErrors(t, p)
 	}
 }
+
+func TestCreateSequenceStatement(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{
+			`CREATE SEQUENCE "users_id_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;`,
+			`CREATE SEQUENCE "users_id_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;`,
+		},
+	}
+
+	for i, tt := range tests {
+		p := New(lexer.Lex("<input>", tt.input))
+		dataDefinition := p.ParseDataDefinition()
+		var builder strings.Builder
+		dataDefinition.WriteStringTo(&builder)
+		if builder.String() != tt.expected {
+			t.Errorf("case%d:\n\tgot  =      %q,\n\twant =      %q", i+1, builder.String(), tt.expected)
+		}
+		checkParserErrors(t, p)
+	}
+}

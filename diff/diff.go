@@ -146,27 +146,58 @@ func createTable(table *Table) string {
 
 func dropTable(table *Table) string {
 	var builder strings.Builder
-	builder.WriteString(fmt.Sprintf(`DROP TABLE "%s"."%s";\n`, table.Schema, table.Name))
+	builder.WriteString(fmt.Sprintf("DROP TABLE \"%s\".\"%s\";\n", table.Schema, table.Name))
 	return builder.String()
 }
 
-// generate DDL for a table whith exists in both.
+// generate DDL for a table which exists in both.
 func diffTable(sourceTable, desiredTable *Table) string {
 	var builder strings.Builder
+
+	for _, sourceColumn := range sourceTable.Columns {
+		desiredColumn, ok := desiredTable.Columns[sourceColumn.Name] //
+		if ok {
+			builder.WriteString(diffColumn(sourceTable, sourceColumn, desiredColumn))
+		} else {
+			builder.WriteString(dropColumn(sourceTable, sourceColumn))
+		}
+	}
+
 	for _, desiredColumn := range desiredTable.Columns {
 		_, ok := sourceTable.Columns[desiredColumn.Name] //
 		if !ok {
-			builder.WriteString(
-				fmt.Sprintf(`ALTER TABLE "%s"."%s" ADD %s %s;\n`,
-					sourceTable.Schema,
-					sourceTable.Name,
-					desiredColumn.Name,
-					desiredColumn.DataType,
-				),
-			)
+			builder.WriteString(addColumn(sourceTable, desiredColumn))
 		}
 	}
 	return builder.String()
+}
+
+func addColumn(table *Table, column *Column) string {
+	return fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" ADD COLUMN \"%s\" \"%s\";\n",
+		table.Schema,
+		table.Name,
+		column.Name,
+		column.DataType,
+	)
+}
+
+func dropColumn(table *Table, column *Column) string {
+	return fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" DROP COLUMN \"%s\";\n",
+		table.Schema,
+		table.Name,
+		column.Name,
+	)
+}
+
+func diffColumn(table *Table, sourceColumn *Column, desiredColumn *Column) string {
+	// TODO
+	return ""
+	// return fmt.Sprintf(`ALTER TABLE "%s"."%s" ADD %s %s;\n`,
+	// 	table.Schema,
+	// 	table.Name,
+	// 	column.Name,
+	// 	column.DataType,
+	// )
 }
 
 func findTable(tables map[string]map[string]*Table, schema string, tableName string) *Table {

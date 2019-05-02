@@ -139,15 +139,14 @@ func (a *analyzer) generatePatch() string {
 
 func createTable(table *Table) string {
 	var builder strings.Builder
-	builder.WriteString(fmt.Sprintf("SET search_path = \"%s\";\n", table.Schema))
+	table.CreateTableStatement.SetSchemaName(table.Schema)
 	table.CreateTableStatement.WriteStringTo(&builder)
 	return builder.String()
 }
 
 func dropTable(table *Table) string {
 	var builder strings.Builder
-	builder.WriteString(fmt.Sprintf("SET search_path = \"%s\";\n", table.Schema))
-	builder.WriteString(fmt.Sprintf("DROP TABLE \"%s\";\n", table.Name))
+	builder.WriteString(fmt.Sprintf(`DROP TABLE "%s"."%s";\n`, table.Schema, table.Name))
 	return builder.String()
 }
 
@@ -157,9 +156,9 @@ func diffTable(sourceTable, desiredTable *Table) string {
 	for _, desiredColumn := range desiredTable.Columns {
 		_, ok := sourceTable.Columns[desiredColumn.Name] //
 		if !ok {
-			builder.WriteString(fmt.Sprintf("SET search_path = \"%s\";\n", sourceTable.Schema))
 			builder.WriteString(
-				fmt.Sprintf("ALTER TABLE %s ADD %s %s;\n",
+				fmt.Sprintf(`ALTER TABLE "%s"."%s" ADD %s %s;\n`,
+					sourceTable.Schema,
 					sourceTable.Name,
 					desiredColumn.Name,
 					desiredColumn.DataType,

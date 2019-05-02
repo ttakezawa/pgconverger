@@ -144,7 +144,7 @@ func (df *Diff) diffTable(sourceTable, desiredTable *Table) {
 	for _, sourceColumn := range sourceTable.Columns {
 		desiredColumn, ok := desiredTable.Columns[sourceColumn.Name] //
 		if ok {
-			df.diffColumn(sourceTable, sourceColumn, desiredColumn)
+			df.alterColumn(sourceTable, sourceColumn, desiredColumn)
 		} else {
 			df.dropColumn(sourceTable, sourceColumn)
 		}
@@ -175,15 +175,52 @@ func (df *Diff) dropColumn(table *Table, column *Column) {
 	))
 }
 
-func (df *Diff) diffColumn(table *Table, sourceColumn *Column, desiredColumn *Column) {
-	// TODO
-	return
-	// return fmt.Sprintf(`ALTER TABLE "%s"."%s" ADD %s %s;\n`,
-	// 	table.Schema,
-	// 	table.Name,
-	// 	column.Name,
-	// 	column.DataType,
-	// )
+func (df *Diff) alterColumn(table *Table, sourceColumn *Column, desiredColumn *Column) {
+	if sourceColumn.DataType != desiredColumn.DataType {
+		df.WriteString(fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" ALTER COLUMN \"%s\" TYPE \"%s\";\n",
+			table.Schema,
+			table.Name,
+			desiredColumn.Name,
+			desiredColumn.DataType,
+		))
+	}
+
+	if sourceColumn.NotNull != desiredColumn.NotNull {
+		if desiredColumn.NotNull {
+			// SET not null
+			df.WriteString(fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" ALTER COLUMN \"%s\" SET NOT NULL;\n",
+				table.Schema,
+				table.Name,
+				desiredColumn.Name,
+			))
+		} else {
+			// Drop not null
+			df.WriteString(fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" ALTER COLUMN \"%s\" DROP NOT NULL;\n",
+				table.Schema,
+				table.Name,
+				desiredColumn.Name,
+			))
+		}
+	}
+
+	if sourceColumn.Default != desiredColumn.Default {
+		if desiredColumn.Default != "" {
+			// SET DEFAULT
+			df.WriteString(fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" ALTER COLUMN \"%s\" SET DEFAULT %s;\n",
+				table.Schema,
+				table.Name,
+				desiredColumn.Name,
+				desiredColumn.Default,
+			))
+		} else {
+			// DROP DEFAULT
+			df.WriteString(fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" ALTER COLUMN \"%s\" DROP DEFAULT;\n",
+				table.Schema,
+				table.Name,
+				desiredColumn.Name,
+			))
+		}
+	}
 }
 
 func findTable(tables map[string]map[string]*Table, schema string, tableName string) *Table {

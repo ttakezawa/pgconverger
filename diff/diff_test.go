@@ -17,8 +17,8 @@ func (r *reader) Name() string {
 	return r.name
 }
 
-func newReader(name string, data string) fileReader {
-	return &reader{bytes.NewBufferString(data), name}
+func newReader(data string) fileReader {
+	return &reader{bytes.NewBufferString(data), "test"}
 }
 
 var reg = regexp.MustCompile(`\s+`)
@@ -41,8 +41,8 @@ func TestProcess(t *testing.T) {
 		{
 			name: "create table",
 			args: args{
-				source:  newReader("testsource", ``),
-				desired: newReader("testdesired", `CREATE TABLE "x" ( id bigint );`),
+				source:  newReader(``),
+				desired: newReader(`CREATE TABLE "x" ( id bigint );`),
 			},
 			want: `
 CREATE TABLE "public"."x" (
@@ -53,8 +53,8 @@ CREATE TABLE "public"."x" (
 		{
 			name: "drop table",
 			args: args{
-				source:  newReader("testsource", `CREATE TABLE "x" ( id bigint );`),
-				desired: newReader("testdesired", ``),
+				source:  newReader(`CREATE TABLE "x" ( id bigint );`),
+				desired: newReader(``),
 			},
 			want:    `DROP TABLE "public"."x";`,
 			wantErr: false,
@@ -62,19 +62,86 @@ CREATE TABLE "public"."x" (
 		{
 			name: "add column",
 			args: args{
-				source:  newReader("testsource", `CREATE TABLE "x" ( id bigint );`),
-				desired: newReader("testdesired", `CREATE TABLE "x" ( id bigint, name text );`),
+				source:  newReader(`CREATE TABLE "x" ( id bigint );`),
+				desired: newReader(`CREATE TABLE "x" ( id bigint, n text );`),
 			},
-			want:    `ALTER TABLE "public"."x" ADD COLUMN "name" "text";`,
+			want:    `ALTER TABLE "public"."x" ADD COLUMN "n" "text";`,
 			wantErr: false,
 		},
 		{
 			name: "drop column",
 			args: args{
-				source:  newReader("testsource", `CREATE TABLE "x" ( id bigint, name text );`),
-				desired: newReader("testdesired", `CREATE TABLE "x" ( id bigint );`),
+				source:  newReader(`CREATE TABLE "x" ( id bigint, n text );`),
+				desired: newReader(`CREATE TABLE "x" ( id bigint );`),
 			},
-			want:    `ALTER TABLE "public"."x" DROP COLUMN "name";`,
+			want:    `ALTER TABLE "public"."x" DROP COLUMN "n";`,
+			wantErr: false,
+		},
+		{
+			name: "alter column type datatype",
+			args: args{
+				source:  newReader(`CREATE TABLE "x" ( id bigint, n bigint );`),
+				desired: newReader(`CREATE TABLE "x" ( id bigint, n text );`),
+			},
+			want:    `ALTER TABLE "public"."x" ALTER COLUMN "n" TYPE "text";`,
+			wantErr: false,
+		},
+		{
+			name: "alter column set not null",
+			args: args{
+				source:  newReader(`CREATE TABLE "x" ( id bigint, n bigint );`),
+				desired: newReader(`CREATE TABLE "x" ( id bigint, n bigint NOT NULL);`),
+			},
+			want:    `ALTER TABLE "public"."x" ALTER COLUMN "n" SET NOT NULL;`,
+			wantErr: false,
+		},
+		{
+			name: "alter column drop not null",
+			args: args{
+				source:  newReader(`CREATE TABLE "x" ( id bigint, n bigint NOT NULL);`),
+				desired: newReader(`CREATE TABLE "x" ( id bigint, n bigint);`),
+			},
+			want:    `ALTER TABLE "public"."x" ALTER COLUMN "n" DROP NOT NULL;`,
+			wantErr: false,
+		},
+		{
+			name: "alter column set default",
+			args: args{
+				source:  newReader(`CREATE TABLE "x" ( id bigint, n bigint);`),
+				desired: newReader(`CREATE TABLE "x" ( id bigint, n bigint DEFAULT 42);`),
+			},
+			want:    `ALTER TABLE "public"."x" ALTER COLUMN "n" SET DEFAULT 42;`,
+			wantErr: false,
+		},
+		{
+			name: "alter column drop default",
+			args: args{
+				source:  newReader(`CREATE TABLE "x" ( id bigint, n bigint DEFAULT 42);`),
+				desired: newReader(`CREATE TABLE "x" ( id bigint, n bigint);`),
+			},
+			want:    `ALTER TABLE "public"."x" ALTER COLUMN "n" DROP DEFAULT;`,
+			wantErr: false,
+		},
+		{
+			name: "alter column type,not null",
+			args: args{
+				source:  newReader(`CREATE TABLE "x" ( id bigint, n integer);`),
+				desired: newReader(`CREATE TABLE "x" ( id bigint, n bigint DEFAULT 42);`),
+			},
+			want: `
+ALTER TABLE "public"."x" ALTER COLUMN "n" TYPE "bigint";
+ALTER TABLE "public"."x" ALTER COLUMN "n" SET DEFAULT 42;`,
+			wantErr: false,
+		},
+		{
+			name: "alter column not null,drop default",
+			args: args{
+				source:  newReader(`CREATE TABLE "x" ( id bigint, n integer default 42);`),
+				desired: newReader(`CREATE TABLE "x" ( id bigint, n integer not null);`),
+			},
+			want: `
+ALTER TABLE "public"."x" ALTER COLUMN "n" SET NOT NULL;
+ALTER TABLE "public"."x" ALTER COLUMN "n" DROP DEFAULT;`,
 			wantErr: false,
 		},
 	}

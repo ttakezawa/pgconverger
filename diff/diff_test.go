@@ -41,13 +41,22 @@ func TestProcess(t *testing.T) {
 		{
 			name: "create table",
 			args: args{
-				source:  newReader("testsource", ""),
+				source:  newReader("testsource", ``),
 				desired: newReader("testdesired", `CREATE TABLE "x" ( id bigint );`),
 			},
 			want: `
 CREATE TABLE "public"."x" (
     "id" bigint
 );`,
+			wantErr: false,
+		},
+		{
+			name: "drop table",
+			args: args{
+				source:  newReader("testsource", `CREATE TABLE "x" ( id bigint );`),
+				desired: newReader("testdesired", ``),
+			},
+			want:    `DROP TABLE "public"."x";`,
 			wantErr: false,
 		},
 	}

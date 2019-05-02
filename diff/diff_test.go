@@ -59,6 +59,24 @@ CREATE TABLE "public"."x" (
 			want:    `DROP TABLE "public"."x";`,
 			wantErr: false,
 		},
+		{
+			name: "add column",
+			args: args{
+				source:  newReader("testsource", `CREATE TABLE "x" ( id bigint );`),
+				desired: newReader("testdesired", `CREATE TABLE "x" ( id bigint, name text );`),
+			},
+			want:    `ALTER TABLE "public"."x" ADD COLUMN "name" "text";`,
+			wantErr: false,
+		},
+		{
+			name: "drop column",
+			args: args{
+				source:  newReader("testsource", `CREATE TABLE "x" ( id bigint, name text );`),
+				desired: newReader("testdesired", `CREATE TABLE "x" ( id bigint );`),
+			},
+			want:    `ALTER TABLE "public"."x" DROP COLUMN "name";`,
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

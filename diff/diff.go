@@ -28,7 +28,7 @@ type Diff struct {
 	desiredErrors []error
 }
 
-func Process(source fileReader, desired fileReader) (*Diff, error) {
+func Process(source fileReader, desired fileReader) (string, error) {
 	df := &Diff{
 		source:  source,
 		desired: desired,
@@ -36,11 +36,10 @@ func Process(source fileReader, desired fileReader) (*Diff, error) {
 	df.sourceErrors, df.sourceDDL = parseOneSide(df.source)
 	df.desiredErrors, df.desiredDDL = parseOneSide(df.desired)
 	if df.ErrorOrNil() != nil {
-		return df, df.ErrorOrNil()
+		return "", df.ErrorOrNil()
 	}
 
-	df.generatePatch()
-	return df, nil
+	return df.generatePatch(), nil
 }
 
 func parseOneSide(reader fileReader) (errs []error, ddl *ast.DataDefinition) {
@@ -71,13 +70,11 @@ func (df *Diff) String() string {
 	return builder.String()
 }
 
-func (df *Diff) generatePatch() {
+func (df *Diff) generatePatch() string {
 	var a analyzer
 	a.sourceSchemas, a.sourceTables = processDDL(df.sourceDDL)
 	a.desiredSchemas, a.desiredTables = processDDL(df.desiredDDL)
-
-	patch := a.generatePatch()
-	log.Printf("%s", patch)
+	return a.generatePatch()
 }
 
 type analyzer struct {
@@ -90,10 +87,11 @@ type analyzer struct {
 
 type (
 	Table struct {
-		Schema  string
-		Name    string
-		Columns map[string]*Column
-		Indexes map[string]*Index
+		CreateTableStatement *ast.CreateTableStatement
+		Schema               string
+		Name                 string
+		Columns              map[string]*Column
+		Indexes              map[string]*Index
 	}
 
 	Column struct {
@@ -113,20 +111,53 @@ type (
 
 func (a *analyzer) generatePatch() string {
 	var builder strings.Builder
+
 	for schema, tables := range a.sourceTables {
 		for _, table := range tables {
 			desiredTable := findTable(a.desiredTables, schema, table.Name)
-			builder.WriteString(diffTable(table, desiredTable))
+			if desiredTable != nil {
+				builder.WriteString(diffTable(table, desiredTable))
+			} else {
+				builder.WriteString(dropTable(table))
+			}
 		}
 	}
+
+	for schema, tables := range a.desiredTables {
+		for _, table := range tables {
+			desiredTable := findTable(a.sourceTables, schema, table.Name)
+			if desiredTable != nil {
+				// none
+			} else {
+				builder.WriteString(createTable(table))
+			}
+		}
+	}
+
 	return builder.String()
 }
 
+func createTable(table *Table) string {
+	var builder strings.Builder
+	builder.WriteString(fmt.Sprintf("SET search_path = \"%s\";\n", table.Schema))
+	table.CreateTableStatement.WriteStringTo(&builder)
+	return builder.String()
+}
+
+func dropTable(table *Table) string {
+	var builder strings.Builder
+	builder.WriteString(fmt.Sprintf("SET search_path = \"%s\";\n", table.Schema))
+	builder.WriteString(fmt.Sprintf("DROP TABLE \"%s\";\n", table.Name))
+	return builder.String()
+}
+
+// generate DDL for a table whith exists in both.
 func diffTable(sourceTable, desiredTable *Table) string {
 	var builder strings.Builder
 	for _, desiredColumn := range desiredTable.Columns {
 		_, ok := sourceTable.Columns[desiredColumn.Name] //
 		if !ok {
+			builder.WriteString(fmt.Sprintf("SET search_path = \"%s\";\n", sourceTable.Schema))
 			builder.WriteString(
 				fmt.Sprintf("ALTER TABLE %s ADD %s %s;\n",
 					sourceTable.Name,
@@ -172,9 +203,10 @@ func processDDL(ddl *ast.DataDefinition) (schemas map[string]struct{}, tables ma
 				columns[col.Name] = col
 			}
 			tbls[stmt.TableName.Value] = &Table{
-				Schema:  currentSchema,
-				Name:    stmt.TableName.Value,
-				Columns: columns,
+				CreateTableStatement: stmt,
+				Schema:               currentSchema,
+				Name:                 stmt.TableName.Value,
+				Columns:              columns,
 			}
 		case *ast.CreateIndexStatement:
 			// TODO

@@ -26,15 +26,24 @@ type Diff struct {
 	desired       fileReader
 	desiredDDL    *ast.DataDefinition
 	desiredErrors []error
+
+	sourceSchemas map[string]struct{}
+	sourceTables  map[string]map[string]*Table
+
+	desiredSchemas map[string]struct{}
+	desiredTables  map[string]map[string]*Table
+
+	stringBuilder *strings.Builder
 }
 
 func Process(source fileReader, desired fileReader) (string, error) {
 	df := &Diff{
-		source:  source,
-		desired: desired,
+		source:        source,
+		desired:       desired,
+		stringBuilder: &strings.Builder{},
 	}
-	df.sourceErrors, df.sourceDDL = parseOneSide(df.source)
-	df.desiredErrors, df.desiredDDL = parseOneSide(df.desired)
+	df.sourceErrors, df.sourceDDL = df.parseOneSide(df.source)
+	df.desiredErrors, df.desiredDDL = df.parseOneSide(df.desired)
 	if df.ErrorOrNil() != nil {
 		return "", df.ErrorOrNil()
 	}
@@ -42,7 +51,11 @@ func Process(source fileReader, desired fileReader) (string, error) {
 	return df.generatePatch(), nil
 }
 
-func parseOneSide(reader fileReader) (errs []error, ddl *ast.DataDefinition) {
+func (df *Diff) WriteString(s string) {
+	_, _ = df.stringBuilder.WriteString(s)
+}
+
+func (*Diff) parseOneSide(reader fileReader) (errs []error, ddl *ast.DataDefinition) {
 	input, err := ioutil.ReadAll(reader)
 	if err != nil {
 		errs = append(errs, err)
@@ -62,27 +75,6 @@ func (df *Diff) ErrorOrNil() error {
 		return &Error{df}
 	}
 	return nil
-}
-
-func (df *Diff) String() string {
-	var builder strings.Builder
-	df.desiredDDL.WriteStringTo(&builder)
-	return builder.String()
-}
-
-func (df *Diff) generatePatch() string {
-	var a analyzer
-	a.sourceSchemas, a.sourceTables = processDDL(df.sourceDDL)
-	a.desiredSchemas, a.desiredTables = processDDL(df.desiredDDL)
-	return a.generatePatch()
-}
-
-type analyzer struct {
-	sourceSchemas map[string]struct{}
-	sourceTables  map[string]map[string]*Table
-
-	desiredSchemas map[string]struct{}
-	desiredTables  map[string]map[string]*Table
 }
 
 type (
@@ -109,89 +101,83 @@ type (
 	}
 )
 
-func (a *analyzer) generatePatch() string {
-	var builder strings.Builder
+func (df *Diff) generatePatch() string {
+	df.sourceSchemas, df.sourceTables = processDDL(df.sourceDDL)
+	df.desiredSchemas, df.desiredTables = processDDL(df.desiredDDL)
 
-	for schema, tables := range a.sourceTables {
+	for schema, tables := range df.sourceTables {
 		for _, table := range tables {
-			desiredTable := findTable(a.desiredTables, schema, table.Name)
+			desiredTable := findTable(df.desiredTables, schema, table.Name)
 			if desiredTable != nil {
-				builder.WriteString(diffTable(table, desiredTable))
+				df.diffTable(table, desiredTable)
 			} else {
-				builder.WriteString(dropTable(table))
+				df.dropTable(table)
 			}
 		}
 	}
 
-	for schema, tables := range a.desiredTables {
+	for schema, tables := range df.desiredTables {
 		for _, table := range tables {
-			desiredTable := findTable(a.sourceTables, schema, table.Name)
+			desiredTable := findTable(df.sourceTables, schema, table.Name)
 			if desiredTable != nil {
 				// none
 			} else {
-				builder.WriteString(createTable(table))
+				df.createTable(table)
 			}
 		}
 	}
 
-	return builder.String()
+	return df.stringBuilder.String()
 }
 
-func createTable(table *Table) string {
-	var builder strings.Builder
+func (df *Diff) createTable(table *Table) {
 	table.CreateTableStatement.SetSchemaName(table.Schema)
-	table.CreateTableStatement.WriteStringTo(&builder)
-	return builder.String()
+	table.CreateTableStatement.WriteStringTo(df.stringBuilder)
 }
 
-func dropTable(table *Table) string {
-	var builder strings.Builder
-	builder.WriteString(fmt.Sprintf("DROP TABLE \"%s\".\"%s\";\n", table.Schema, table.Name))
-	return builder.String()
+func (df *Diff) dropTable(table *Table) {
+	df.WriteString(fmt.Sprintf("DROP TABLE \"%s\".\"%s\";\n", table.Schema, table.Name))
 }
 
 // generate DDL for a table which exists in both.
-func diffTable(sourceTable, desiredTable *Table) string {
-	var builder strings.Builder
-
+func (df *Diff) diffTable(sourceTable, desiredTable *Table) {
 	for _, sourceColumn := range sourceTable.Columns {
 		desiredColumn, ok := desiredTable.Columns[sourceColumn.Name] //
 		if ok {
-			builder.WriteString(diffColumn(sourceTable, sourceColumn, desiredColumn))
+			df.diffColumn(sourceTable, sourceColumn, desiredColumn)
 		} else {
-			builder.WriteString(dropColumn(sourceTable, sourceColumn))
+			df.dropColumn(sourceTable, sourceColumn)
 		}
 	}
 
 	for _, desiredColumn := range desiredTable.Columns {
 		_, ok := sourceTable.Columns[desiredColumn.Name] //
 		if !ok {
-			builder.WriteString(addColumn(sourceTable, desiredColumn))
+			df.addColumn(sourceTable, desiredColumn)
 		}
 	}
-	return builder.String()
 }
 
-func addColumn(table *Table, column *Column) string {
-	return fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" ADD COLUMN \"%s\" \"%s\";\n",
+func (df *Diff) addColumn(table *Table, column *Column) {
+	df.WriteString(fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" ADD COLUMN \"%s\" \"%s\";\n",
 		table.Schema,
 		table.Name,
 		column.Name,
 		column.DataType,
-	)
+	))
 }
 
-func dropColumn(table *Table, column *Column) string {
-	return fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" DROP COLUMN \"%s\";\n",
+func (df *Diff) dropColumn(table *Table, column *Column) {
+	df.WriteString(fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" DROP COLUMN \"%s\";\n",
 		table.Schema,
 		table.Name,
 		column.Name,
-	)
+	))
 }
 
-func diffColumn(table *Table, sourceColumn *Column, desiredColumn *Column) string {
+func (df *Diff) diffColumn(table *Table, sourceColumn *Column, desiredColumn *Column) {
 	// TODO
-	return ""
+	return
 	// return fmt.Sprintf(`ALTER TABLE "%s"."%s" ADD %s %s;\n`,
 	// 	table.Schema,
 	// 	table.Name,
@@ -240,7 +226,7 @@ func processDDL(ddl *ast.DataDefinition) (schemas map[string]struct{}, tables ma
 			}
 		case *ast.CreateIndexStatement:
 			// TODO
-			// 	tbls := a.sourceTables[a.currentSchema]
+			// 	tbls := df.sourceTables[df.currentSchema]
 			// 	t := tbls[stmt.TableName.Value]
 			// 	t.CreateIndexes = append(t.CreateIndexes, stmt)
 		default:

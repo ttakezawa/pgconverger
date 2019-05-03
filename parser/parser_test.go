@@ -124,7 +124,7 @@ func TestCreateIndexStatement(t *testing.T) {
 		},
 		{
 			`CREATE INDEX idx ON public.users USING btree (id, created_at DESC);`,
-			`CREATE INDEX "idx" ON "public"."users" USING "btree"" ("type", "created_at" DESC);`,
+			`CREATE INDEX "idx" ON "public"."users" USING "btree" ("id", "created_at" DESC);`,
 		},
 	}
 

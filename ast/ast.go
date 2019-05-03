@@ -185,6 +185,18 @@ func (columnConstraintDefault *ColumnConstraintDefault) WriteStringTo(w io.Strin
 	columnConstraintDefault.Expr.WriteStringTo(w)
 }
 
+type IndexTarget struct {
+	Node   Node
+	IsDesc bool
+}
+
+func (indexTarget *IndexTarget) WriteStringTo(w io.StringWriter) {
+	indexTarget.Node.WriteStringTo(w)
+	if indexTarget.IsDesc {
+		_, _ = w.WriteString(" DESC")
+	}
+}
+
 type InfixExpression struct {
 	Left     Expression
 	Operator token.Token
@@ -269,7 +281,7 @@ type CreateIndexStatement struct {
 	Name         *Identifier
 	TableName    *TableName
 	UsingMethod  *Identifier
-	IndexTargets []Node // Slice of (Identifier OR Expression)
+	IndexTargets []*IndexTarget // Slice of (Identifier OR Expression)
 }
 
 func (*CreateIndexStatement) statementNode() {}

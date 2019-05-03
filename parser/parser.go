@@ -703,9 +703,9 @@ func (p *Parser) parseCreateSequenceOption(createSequenceStatement *ast.CreateSe
 	}
 }
 
-// ( target , ... )
-func (p *Parser) parseIndexTargets() []ast.Node {
-	var indexTargets []ast.Node
+// ( target [ASC|DESC], ... )
+func (p *Parser) parseIndexTargets() []*ast.IndexTarget {
+	var indexTargets []*ast.IndexTarget
 	p.advance()
 	if p.token.Type == token.RParen {
 		return indexTargets
@@ -713,10 +713,20 @@ func (p *Parser) parseIndexTargets() []ast.Node {
 	for {
 		if p.isIdentifier() {
 			identifier := p.parseIdentifier()
-			indexTargets = append(indexTargets, identifier)
+			indexTarget := &ast.IndexTarget{
+				Node: identifier,
+			}
+			switch p.peekToken.Type {
+			case token.Asc:
+				p.advance()
+			case token.Desc:
+				indexTarget.IsDesc = true
+				p.advance()
+			}
+			indexTargets = append(indexTargets, indexTarget)
 		} else {
 			expr := p.parseExpression(precedenceLowest)
-			indexTargets = append(indexTargets, expr)
+			indexTargets = append(indexTargets, &ast.IndexTarget{Node: expr})
 		}
 		if p.peekToken.Type == token.RParen {
 			return indexTargets

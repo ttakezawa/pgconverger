@@ -42,6 +42,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.String, p.parseStringLiteral)
 	p.registerPrefix(token.Number, p.parseNumberLiteral)
 	p.registerPrefix(token.Identifier, p.parseIdentifierAsExpression)
+	p.registerPrefix(token.Text, p.parseIdentifierAsExpression)
 	// p.registerPrefix(token.Minus, p.parsePrefixExpression)
 	// p.registerPrefix(token.Plus, p.parsePrefixExpression)
 	p.registerPrefix(token.True, p.parseBoolean)

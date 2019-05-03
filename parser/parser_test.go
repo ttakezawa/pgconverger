@@ -41,7 +41,8 @@ func TestCreateTableStatement(t *testing.T) {
     "x" bigint NULL,
     created_at timestamp with time zone,
     "code" "text" DEFAULT '0001'::"text" NOT NULL,
-    expr bigint DEFAULT 1+2*3/4::"text",
+    expr1 bigint DEFAULT 1+2*3/4::"text",
+    expr2 bigint DEFAULT '0002'::text,
     flag1 bigint DEFAULT TRUE,
     flag2 bigint DEFAULT falSe
 );`,
@@ -62,7 +63,8 @@ func TestCreateTableStatement(t *testing.T) {
     "x" bigint,
     "created_at" timestamp with time zone,
     "code" text DEFAULT '0001'::"text" NOT NULL,
-    "expr" bigint DEFAULT 1+2*3/4::"text",
+    "expr1" bigint DEFAULT 1+2*3/4::"text",
+    "expr2" bigint DEFAULT '0002'::"text",
     "flag1" bigint DEFAULT TRUE,
     "flag2" bigint DEFAULT FALSE
 );

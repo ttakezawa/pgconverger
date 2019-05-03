@@ -209,6 +209,9 @@ func (p *Parser) parseStatement() ast.Statement {
 		return nil
 	case token.Set:
 		return p.parseSetStatement()
+	case token.Select:
+		// Not yet implemented
+		return nil
 	case token.Comment:
 		// Not yet implemented
 		return nil

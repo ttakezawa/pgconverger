@@ -189,6 +189,9 @@ func (p *Parser) parseStatement() ast.Statement {
 		case token.Extension:
 			// Not yet implemented
 			return nil
+		case token.Function:
+			// Not yet implemented
+			return nil
 		case token.View:
 			// Not yet implemented
 			return nil

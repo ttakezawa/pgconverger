@@ -41,6 +41,7 @@ const (
 	Exists
 	Extension
 	False
+	Function
 	Grant
 	If
 	Increment
@@ -113,6 +114,7 @@ var keywords = map[string]keyword{
 	"EXISTS":       {Exists, false}, // non-reserved (cannot be function or type)
 	"EXTENSION":    {Extension, false},
 	"FALSE":        {False, true},
+	"FUNCTION":     {Function, false},
 	"GRANT":        {Grant, true},
 	"IF":           {If, false},
 	"INCREMENT":    {Increment, false},

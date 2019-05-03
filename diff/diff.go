@@ -27,11 +27,8 @@ type Diff struct {
 	desiredDDL    *ast.DataDefinition
 	desiredErrors []error
 
-	sourceSchemas map[string]struct{}
-	sourceTables  map[string]map[string]*Table
-
-	desiredSchemas map[string]struct{}
-	desiredTables  map[string]map[string]*Table
+	sourceTables  Tables
+	desiredTables Tables
 
 	stringBuilder *strings.Builder
 }
@@ -80,10 +77,10 @@ func (df *Diff) ErrorOrNil() error {
 type (
 	Table struct {
 		CreateTableStatement *ast.CreateTableStatement
-		Schema               string
-		Name                 string
-		Columns              map[string]*Column
-		Indexes              map[string]*Index
+		string
+		Identifier string
+		Columns    map[string]*Column
+		Indexes    map[string]*Index
 	}
 
 	Column struct {
@@ -102,43 +99,36 @@ type (
 )
 
 func (df *Diff) generatePatch() string {
-	df.sourceSchemas, df.sourceTables = processDDL(df.sourceDDL)
-	df.desiredSchemas, df.desiredTables = processDDL(df.desiredDDL)
+	df.sourceTables = processDDL(df.sourceDDL)
+	df.desiredTables = processDDL(df.desiredDDL)
 
-	for searchPath, tables := range df.sourceTables {
-		for _, table := range tables {
-			desiredTable := findTable(df.desiredTables, searchPath, table.Name)
-			if desiredTable != nil {
-				df.diffTable(table, desiredTable)
-			} else {
-				df.dropTable(table)
-			}
+	for identifier, table := range df.sourceTables {
+		desiredTable := findTable(df.desiredTables, identifier)
+		if desiredTable != nil {
+			df.diffTable(table, desiredTable)
+		} else {
+			df.dropTable(table)
 		}
 	}
 
-	for searchPath, tables := range df.desiredTables {
-		for _, table := range tables {
-			desiredTable := findTable(df.sourceTables, searchPath, table.Name)
-			if desiredTable != nil {
-				// none
-			} else {
-				df.createTable(searchPath, table)
-			}
+	for identifier, table := range df.desiredTables {
+		desiredTable := findTable(df.sourceTables, identifier)
+		if desiredTable != nil {
+			// none
+		} else {
+			df.createTable(table)
 		}
 	}
 
 	return df.stringBuilder.String()
 }
 
-func (df *Diff) createTable(searchPath string, table *Table) {
-	if table.CreateTableStatement.SchemaName == nil {
-		table.CreateTableStatement.SetSchema(searchPath)
-	}
+func (df *Diff) createTable(table *Table) {
 	table.CreateTableStatement.WriteStringTo(df.stringBuilder)
 }
 
 func (df *Diff) dropTable(table *Table) {
-	df.WriteString(fmt.Sprintf("DROP TABLE \"%s\".\"%s\";\n", table.Schema, table.Name))
+	df.WriteString(fmt.Sprintf("DROP TABLE %s;\n", table.Identifier))
 }
 
 // generate DDL for a table which exists in both.
@@ -161,27 +151,24 @@ func (df *Diff) diffTable(sourceTable, desiredTable *Table) {
 }
 
 func (df *Diff) addColumn(table *Table, column *Column) {
-	df.WriteString(fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" ADD COLUMN \"%s\" \"%s\";\n",
-		table.Schema,
-		table.Name,
+	df.WriteString(fmt.Sprintf("ALTER TABLE %s ADD COLUMN \"%s\" \"%s\";\n",
+		table.Identifier,
 		column.Name,
 		column.DataType,
 	))
 }
 
 func (df *Diff) dropColumn(table *Table, column *Column) {
-	df.WriteString(fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" DROP COLUMN \"%s\";\n",
-		table.Schema,
-		table.Name,
+	df.WriteString(fmt.Sprintf("ALTER TABLE %s DROP COLUMN \"%s\";\n",
+		table.Identifier,
 		column.Name,
 	))
 }
 
 func (df *Diff) alterColumn(table *Table, sourceColumn *Column, desiredColumn *Column) {
 	if sourceColumn.DataType != desiredColumn.DataType {
-		df.WriteString(fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" ALTER COLUMN \"%s\" TYPE \"%s\";\n",
-			table.Schema,
-			table.Name,
+		df.WriteString(fmt.Sprintf("ALTER TABLE %s ALTER COLUMN \"%s\" TYPE \"%s\";\n",
+			table.Identifier,
 			desiredColumn.Name,
 			desiredColumn.DataType,
 		))
@@ -190,16 +177,14 @@ func (df *Diff) alterColumn(table *Table, sourceColumn *Column, desiredColumn *C
 	if sourceColumn.NotNull != desiredColumn.NotNull {
 		if desiredColumn.NotNull {
 			// SET not null
-			df.WriteString(fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" ALTER COLUMN \"%s\" SET NOT NULL;\n",
-				table.Schema,
-				table.Name,
+			df.WriteString(fmt.Sprintf("ALTER TABLE %s ALTER COLUMN \"%s\" SET NOT NULL;\n",
+				table.Identifier,
 				desiredColumn.Name,
 			))
 		} else {
 			// Drop not null
-			df.WriteString(fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" ALTER COLUMN \"%s\" DROP NOT NULL;\n",
-				table.Schema,
-				table.Name,
+			df.WriteString(fmt.Sprintf("ALTER TABLE %s ALTER COLUMN \"%s\" DROP NOT NULL;\n",
+				table.Identifier,
 				desiredColumn.Name,
 			))
 		}
@@ -208,31 +193,50 @@ func (df *Diff) alterColumn(table *Table, sourceColumn *Column, desiredColumn *C
 	if sourceColumn.Default != desiredColumn.Default {
 		if desiredColumn.Default != "" {
 			// SET DEFAULT
-			df.WriteString(fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" ALTER COLUMN \"%s\" SET DEFAULT %s;\n",
-				table.Schema,
-				table.Name,
+			df.WriteString(fmt.Sprintf("ALTER TABLE %s ALTER COLUMN \"%s\" SET DEFAULT %s;\n",
+				table.Identifier,
 				desiredColumn.Name,
 				desiredColumn.Default,
 			))
 		} else {
 			// DROP DEFAULT
-			df.WriteString(fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" ALTER COLUMN \"%s\" DROP DEFAULT;\n",
-				table.Schema,
-				table.Name,
+			df.WriteString(fmt.Sprintf("ALTER TABLE %s ALTER COLUMN \"%s\" DROP DEFAULT;\n",
+				table.Identifier,
 				desiredColumn.Name,
 			))
 		}
 	}
 }
 
-func findTable(tables map[string]map[string]*Table, schema string, tableName string) *Table {
-	return tables[schema][tableName]
+func findTable(tables Tables, identifier string) *Table {
+	return tables[identifier]
+}
+
+type Tables map[string]*Table
+
+func (tables Tables) AddTable(searchPath string, createTableStatement *ast.CreateTableStatement) {
+	if createTableStatement.TableName.SchemaIdentifier == nil {
+		createTableStatement.TableName.SetSchema(searchPath)
+	}
+	identifier := createTableStatement.TableName.String()
+
+	columns := make(map[string]*Column)
+	for _, columnDefinition := range createTableStatement.ColumnDefinitionList {
+		col := columnFromAst(columnDefinition)
+		columns[col.Name] = col
+	}
+
+	tables[identifier] = &Table{
+		CreateTableStatement: createTableStatement,
+		Identifier:           identifier,
+		Columns:              columns,
+		// Indexes: indexes // TODO
+	}
 }
 
 // processDDL converts to schema and table mappings
-func processDDL(ddl *ast.DataDefinition) (schemas map[string]struct{}, tables map[string]map[string]*Table) {
-	schemas = make(map[string]struct{})
-	tables = make(map[string]map[string]*Table)
+func processDDL(ddl *ast.DataDefinition) Tables {
+	var tables = make(Tables)
 	searchPath := "public"
 
 	for _, statement := range ddl.StatementList {
@@ -245,24 +249,9 @@ func processDDL(ddl *ast.DataDefinition) (schemas map[string]struct{}, tables ma
 				}
 			}
 		case *ast.CreateSchemaStatement:
-			schemas[stmt.Name.Value] = struct{}{}
+			// nop
 		case *ast.CreateTableStatement:
-			tbls, ok := tables[searchPath]
-			if !ok {
-				tbls = make(map[string]*Table)
-				tables[searchPath] = tbls
-			}
-			columns := make(map[string]*Column)
-			for _, columnDefinition := range stmt.ColumnDefinitionList {
-				col := columnFromAst(columnDefinition)
-				columns[col.Name] = col
-			}
-			tbls[stmt.TableName.Value] = &Table{
-				CreateTableStatement: stmt,
-				Schema:               searchPath,
-				Name:                 stmt.TableName.Value,
-				Columns:              columns,
-			}
+			tables.AddTable(searchPath, stmt)
 		case *ast.CreateIndexStatement:
 			// TODO
 			// 	tbls := df.sourceTables[df.searchPath]
@@ -272,7 +261,7 @@ func processDDL(ddl *ast.DataDefinition) (schemas map[string]struct{}, tables ma
 			log.Printf("skip statement: %v", stmt)
 		}
 	}
-	return
+	return tables
 }
 
 func columnFromAst(columnDefinition *ast.ColumnDefinition) *Column {

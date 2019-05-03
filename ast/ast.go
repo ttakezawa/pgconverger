@@ -27,6 +27,37 @@ type Expression interface {
 	expressionNode()
 }
 
+type TableName struct {
+	SchemaIdentifier *Identifier
+	TableIdentifier  *Identifier
+}
+
+func (tableName *TableName) WriteStringTo(w io.StringWriter) {
+	if tableName.SchemaIdentifier != nil {
+		tableName.SchemaIdentifier.WriteStringTo(w)
+		_, _ = w.WriteString(`.`)
+	}
+	tableName.TableIdentifier.WriteStringTo(w)
+}
+
+func (tableName *TableName) String() string {
+	var builder strings.Builder
+	tableName.WriteStringTo(&builder)
+	return builder.String()
+}
+
+func (tableName *TableName) SetSchema(schema string) {
+	// TODO: refactor
+	tableName.SchemaIdentifier = &Identifier{
+		Token: token.Token{
+			Type:    token.Identifier,
+			Literal: `"` + schema + `"`,
+			Line:    0,
+		},
+		Value: schema,
+	}
+}
+
 type Identifier struct {
 	Token token.Token
 	Value string
@@ -76,31 +107,14 @@ func (createSchemaStatement *CreateSchemaStatement) WriteStringTo(w io.StringWri
 // [ ON COMMIT { PRESERVE ROWS | DELETE ROWS | DROP } ]
 // [ TABLESPACE tablespace_name ]
 type CreateTableStatement struct {
-	SchemaName           *Identifier
-	TableName            *Identifier
+	TableName            *TableName
 	ColumnDefinitionList []*ColumnDefinition
 }
 
 func (*CreateTableStatement) statementNode() {}
 
-func (createTableStatement *CreateTableStatement) SetSchema(schema string) {
-	// TODO: refactor
-	createTableStatement.SchemaName = &Identifier{
-		Token: token.Token{
-			Type:    token.Identifier,
-			Literal: `"` + schema + `"`,
-			Line:    0,
-		},
-		Value: schema,
-	}
-}
-
 func (createTableStatement *CreateTableStatement) WriteStringTo(w io.StringWriter) {
 	_, _ = w.WriteString("CREATE TABLE ")
-	if createTableStatement.SchemaName != nil {
-		createTableStatement.SchemaName.WriteStringTo(w)
-		_, _ = w.WriteString(".")
-	}
 	createTableStatement.TableName.WriteStringTo(w)
 	_, _ = w.WriteString(" (\n")
 

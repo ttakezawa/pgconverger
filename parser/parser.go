@@ -237,24 +237,11 @@ func (p *Parser) parseCreateTableStatement() ast.Statement {
 	}
 
 	p.advance()
-	identifier := p.parseIdentifier()
-	if identifier == nil {
+	tableName := p.parseTableName()
+	if tableName == nil {
 		return nil
 	}
-	if p.peekToken.Type != token.Dot {
-		// Case: CREATE TABLE "table_name" ( ...
-		createTableStatement.TableName = identifier
-	} else {
-		// Case: CREATE TABLE "schema_name"."table_name" ( ...
-		createTableStatement.SchemaName = identifier
-		p.advance()
-		p.advance()
-		identifier := p.parseIdentifier()
-		if identifier == nil {
-			return nil
-		}
-		createTableStatement.TableName = identifier
-	}
+	createTableStatement.TableName = tableName
 
 	if !p.expectPeek(token.LParen) {
 		return nil
@@ -293,6 +280,31 @@ func (p *Parser) parseColumnDefinitionList() (defs []*ast.ColumnDefinition) {
 		}
 	}
 	return
+}
+
+// "table_name" | "schema_name"."table_name"
+func (p *Parser) parseTableName() *ast.TableName {
+	var tableName ast.TableName
+
+	identifier := p.parseIdentifier()
+	if identifier == nil {
+		return nil
+	}
+	if p.peekToken.Type != token.Dot {
+		// Case: CREATE TABLE "table_name" ( ...
+		tableName.TableIdentifier = identifier
+	} else {
+		// Case: CREATE TABLE "schema_name"."table_name" ( ...
+		tableName.SchemaIdentifier = identifier
+		p.advance()
+		p.advance()
+		identifier := p.parseIdentifier()
+		if identifier == nil {
+			return nil
+		}
+		tableName.TableIdentifier = identifier
+	}
+	return &tableName
 }
 
 func (p *Parser) parseIdentifierAsExpression() ast.Expression {

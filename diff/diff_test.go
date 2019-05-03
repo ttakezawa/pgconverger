@@ -170,6 +170,30 @@ ALTER TABLE "public"."x" ALTER COLUMN "n" SET NOT NULL;
 ALTER TABLE "public"."x" ALTER COLUMN "n" DROP DEFAULT;`,
 			wantErr: false,
 		},
+		{
+			name: "create index",
+			args: args{
+				source: newReader(`
+CREATE TABLE users (name text);`),
+				desired: newReader(`
+CREATE TABLE users (name text);
+CREATE INDEX idx ON users USING btree (name);`),
+			},
+			want:    `CREATE INDEX "idx" ON "public"."users" USING "btree" ("name");`,
+			wantErr: false,
+		},
+		{
+			name: "drop index",
+			args: args{
+				source: newReader(`
+CREATE TABLE users (name text);
+CREATE INDEX idx ON users USING btree (name);`),
+				desired: newReader(`
+CREATE TABLE users (name text);`),
+			},
+			want:    `DROP INDEX "idx";`,
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

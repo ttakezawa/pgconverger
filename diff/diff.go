@@ -75,12 +75,15 @@ func (df *Diff) ErrorOrNil() error {
 }
 
 type (
+	Tables  map[string]*Table
+	Indexes map[string]*Index
+
 	Table struct {
 		CreateTableStatement *ast.CreateTableStatement
 		string
 		Identifier string
 		Columns    map[string]*Column
-		Indexes    map[string]*Index
+		Indexes    Indexes
 	}
 
 	Column struct {
@@ -91,10 +94,8 @@ type (
 	}
 
 	Index struct {
-		Name    string
-		Primary bool
-		Unique  bool
-		Columns []string
+		CreateIndexStatement *ast.CreateIndexStatement
+		Name                 string
 	}
 )
 
@@ -146,6 +147,23 @@ func (df *Diff) diffTable(sourceTable, desiredTable *Table) {
 		_, ok := sourceTable.Columns[desiredColumn.Name] //
 		if !ok {
 			df.addColumn(sourceTable, desiredColumn)
+		}
+	}
+
+	for _, sourceIndex := range sourceTable.Indexes {
+		desiredIndex, ok := desiredTable.Indexes[sourceIndex.Name]
+		if ok {
+			// TODO: ALTER INDEX ?
+			_ = desiredIndex
+		} else {
+			df.dropIndex(sourceTable, sourceIndex)
+		}
+	}
+
+	for _, desiredIndex := range desiredTable.Indexes {
+		_, ok := sourceTable.Indexes[desiredIndex.Name] //
+		if !ok {
+			df.createIndex(sourceTable, desiredIndex)
 		}
 	}
 }
@@ -208,7 +226,15 @@ func (df *Diff) alterColumn(table *Table, sourceColumn *Column, desiredColumn *C
 	}
 }
 
-type Tables map[string]*Table
+func (df *Diff) createIndex(_ *Table, index *Index) {
+	index.CreateIndexStatement.WriteStringTo(df.stringBuilder)
+}
+
+func (df *Diff) dropIndex(table *Table, index *Index) {
+	df.WriteString(fmt.Sprintf("DROP INDEX \"%s\";\n",
+		index.Name,
+	))
+}
 
 func (tables Tables) FindTable(identifier string) *Table {
 	return tables[identifier]
@@ -230,7 +256,24 @@ func (tables Tables) AddTable(searchPath string, createTableStatement *ast.Creat
 		CreateTableStatement: createTableStatement,
 		Identifier:           identifier,
 		Columns:              columns,
-		// Indexes: indexes // TODO
+		Indexes:              make(Indexes),
+	}
+}
+
+func (tables Tables) AddIndex(searchPath string, createIndexStatement *ast.CreateIndexStatement) {
+	if createIndexStatement.TableName.SchemaIdentifier == nil {
+		createIndexStatement.TableName.SetSchema(searchPath)
+	}
+	tableName := createIndexStatement.TableName.String()
+	table := tables.FindTable(tableName)
+	if table == nil {
+		log.Printf("irregular create index to unknown table=%s", tableName)
+		return
+	}
+	indexName := createIndexStatement.Name.Value
+	table.Indexes[indexName] = &Index{
+		CreateIndexStatement: createIndexStatement,
+		Name:                 indexName,
 	}
 }
 
@@ -253,10 +296,7 @@ func processDDL(ddl *ast.DataDefinition) Tables {
 		case *ast.CreateTableStatement:
 			tables.AddTable(searchPath, stmt)
 		case *ast.CreateIndexStatement:
-			// TODO
-			// 	tbls := df.sourceTables[df.searchPath]
-			// 	t := tbls[stmt.TableName.Value]
-			// 	t.CreateIndexes = append(t.CreateIndexes, stmt)
+			tables.AddIndex(searchPath, stmt)
 		default:
 			log.Printf("skip statement: %v", stmt)
 		}

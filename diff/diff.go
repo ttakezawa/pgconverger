@@ -102,21 +102,21 @@ func (df *Diff) generatePatch() string {
 	df.sourceTables = processDDL(df.sourceDDL)
 	df.desiredTables = processDDL(df.desiredDDL)
 
-	for identifier, table := range df.sourceTables {
-		desiredTable := findTable(df.desiredTables, identifier)
+	for identifier, sourceTable := range df.sourceTables {
+		desiredTable := df.desiredTables.FindTable(identifier)
 		if desiredTable != nil {
-			df.diffTable(table, desiredTable)
+			df.diffTable(sourceTable, desiredTable)
 		} else {
-			df.dropTable(table)
+			df.dropTable(sourceTable)
 		}
 	}
 
-	for identifier, table := range df.desiredTables {
-		desiredTable := findTable(df.sourceTables, identifier)
-		if desiredTable != nil {
+	for identifier, desiredTable := range df.desiredTables {
+		sourceTable := df.sourceTables.FindTable(identifier)
+		if sourceTable != nil {
 			// none
 		} else {
-			df.createTable(table)
+			df.createTable(desiredTable)
 		}
 	}
 
@@ -208,11 +208,11 @@ func (df *Diff) alterColumn(table *Table, sourceColumn *Column, desiredColumn *C
 	}
 }
 
-func findTable(tables Tables, identifier string) *Table {
+type Tables map[string]*Table
+
+func (tables Tables) FindTable(identifier string) *Table {
 	return tables[identifier]
 }
-
-type Tables map[string]*Table
 
 func (tables Tables) AddTable(searchPath string, createTableStatement *ast.CreateTableStatement) {
 	if createTableStatement.TableName.SchemaIdentifier == nil {

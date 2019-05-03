@@ -31,6 +31,7 @@ const (
 
 	Add
 	Alter
+	Asc
 	By
 	Cache
 	Column
@@ -38,6 +39,7 @@ const (
 	Constraint
 	Create
 	Default
+	Desc
 	Exists
 	Extension
 	False
@@ -99,6 +101,7 @@ type keyword struct {
 var keywords = map[string]keyword{
 	"ADD":          {Add, false},
 	"ALTER":        {Alter, false},
+	"ASC":          {Asc, true},
 	"BIGINT":       {Bigint, false},
 	"BIGSERIAL":    {Bigserial, false},
 	"BOOLEAN":      {Boolean, false},
@@ -113,6 +116,7 @@ var keywords = map[string]keyword{
 	"CREATE":       {Create, true},
 	"DATE":         {Date, false},
 	"DEFAULT":      {Default, true},
+	"DESC":         {Desc, true},
 	"EXISTS":       {Exists, false}, // non-reserved (cannot be function or type)
 	"EXTENSION":    {Extension, false},
 	"FALSE":        {False, true},

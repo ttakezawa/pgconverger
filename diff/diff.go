@@ -105,9 +105,9 @@ func (df *Diff) generatePatch() string {
 	df.sourceSchemas, df.sourceTables = processDDL(df.sourceDDL)
 	df.desiredSchemas, df.desiredTables = processDDL(df.desiredDDL)
 
-	for schema, tables := range df.sourceTables {
+	for searchPath, tables := range df.sourceTables {
 		for _, table := range tables {
-			desiredTable := findTable(df.desiredTables, schema, table.Name)
+			desiredTable := findTable(df.desiredTables, searchPath, table.Name)
 			if desiredTable != nil {
 				df.diffTable(table, desiredTable)
 			} else {
@@ -116,13 +116,13 @@ func (df *Diff) generatePatch() string {
 		}
 	}
 
-	for schema, tables := range df.desiredTables {
+	for searchPath, tables := range df.desiredTables {
 		for _, table := range tables {
-			desiredTable := findTable(df.sourceTables, schema, table.Name)
+			desiredTable := findTable(df.sourceTables, searchPath, table.Name)
 			if desiredTable != nil {
 				// none
 			} else {
-				df.createTable(table)
+				df.createTable(searchPath, table)
 			}
 		}
 	}
@@ -130,8 +130,10 @@ func (df *Diff) generatePatch() string {
 	return df.stringBuilder.String()
 }
 
-func (df *Diff) createTable(table *Table) {
-	table.CreateTableStatement.SetSchemaName(table.Schema)
+func (df *Diff) createTable(searchPath string, table *Table) {
+	if table.CreateTableStatement.SchemaName == nil {
+		table.CreateTableStatement.SetSchema(searchPath)
+	}
 	table.CreateTableStatement.WriteStringTo(df.stringBuilder)
 }
 
@@ -231,7 +233,7 @@ func findTable(tables map[string]map[string]*Table, schema string, tableName str
 func processDDL(ddl *ast.DataDefinition) (schemas map[string]struct{}, tables map[string]map[string]*Table) {
 	schemas = make(map[string]struct{})
 	tables = make(map[string]map[string]*Table)
-	currentSchema := "public"
+	searchPath := "public"
 
 	for _, statement := range ddl.StatementList {
 		switch stmt := statement.(type) {
@@ -239,16 +241,16 @@ func processDDL(ddl *ast.DataDefinition) (schemas map[string]struct{}, tables ma
 			if stmt.Name.Value == "search_path" {
 				ident, ok := stmt.Values[0].(*ast.Identifier)
 				if ok {
-					currentSchema = ident.Value
+					searchPath = ident.Value
 				}
 			}
 		case *ast.CreateSchemaStatement:
 			schemas[stmt.Name.Value] = struct{}{}
 		case *ast.CreateTableStatement:
-			tbls, ok := tables[currentSchema]
+			tbls, ok := tables[searchPath]
 			if !ok {
 				tbls = make(map[string]*Table)
-				tables[currentSchema] = tbls
+				tables[searchPath] = tbls
 			}
 			columns := make(map[string]*Column)
 			for _, columnDefinition := range stmt.ColumnDefinitionList {
@@ -257,13 +259,13 @@ func processDDL(ddl *ast.DataDefinition) (schemas map[string]struct{}, tables ma
 			}
 			tbls[stmt.TableName.Value] = &Table{
 				CreateTableStatement: stmt,
-				Schema:               currentSchema,
+				Schema:               searchPath,
 				Name:                 stmt.TableName.Value,
 				Columns:              columns,
 			}
 		case *ast.CreateIndexStatement:
 			// TODO
-			// 	tbls := df.sourceTables[df.currentSchema]
+			// 	tbls := df.sourceTables[df.searchPath]
 			// 	t := tbls[stmt.TableName.Value]
 			// 	t.CreateIndexes = append(t.CreateIndexes, stmt)
 		default:

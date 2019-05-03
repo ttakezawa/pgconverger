@@ -68,6 +68,15 @@ func TestCreateTableStatement(t *testing.T) {
 );
 `,
 		},
+		{
+			`CREATE TABLE public."users" (
+    "id" bigint NOT NULL DEFAULT 'nextval(''users_id_seq''::regclass)'
+);`,
+			`CREATE TABLE "public"."users" (
+    "id" bigint NOT NULL DEFAULT 'nextval(''users_id_seq''::regclass)'
+);
+`,
+		},
 	}
 
 	for i, tt := range tests {

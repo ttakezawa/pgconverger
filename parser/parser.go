@@ -241,7 +241,20 @@ func (p *Parser) parseCreateTableStatement() ast.Statement {
 	if identifier == nil {
 		return nil
 	}
-	createTableStatement.TableName = identifier
+	if p.peekToken.Type != token.Dot {
+		// Case: CREATE TABLE "table_name" ( ...
+		createTableStatement.TableName = identifier
+	} else {
+		// Case: CREATE TABLE "schema_name"."table_name" ( ...
+		createTableStatement.SchemaName = identifier
+		p.advance()
+		p.advance()
+		identifier := p.parseIdentifier()
+		if identifier == nil {
+			return nil
+		}
+		createTableStatement.TableName = identifier
+	}
 
 	if !p.expectPeek(token.LParen) {
 		return nil

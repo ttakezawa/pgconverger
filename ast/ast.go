@@ -1,7 +1,6 @@
 package ast
 
 import (
-	"fmt"
 	"io"
 	"strings"
 
@@ -77,21 +76,30 @@ func (createSchemaStatement *CreateSchemaStatement) WriteStringTo(w io.StringWri
 // [ ON COMMIT { PRESERVE ROWS | DELETE ROWS | DROP } ]
 // [ TABLESPACE tablespace_name ]
 type CreateTableStatement struct {
-	schemaName           string
+	SchemaName           *Identifier
 	TableName            *Identifier
 	ColumnDefinitionList []*ColumnDefinition
 }
 
-func (createTableStatement *CreateTableStatement) SetSchemaName(schemaName string) {
-	createTableStatement.schemaName = schemaName
-}
-
 func (*CreateTableStatement) statementNode() {}
+
+func (createTableStatement *CreateTableStatement) SetSchema(schema string) {
+	// TODO: refactor
+	createTableStatement.SchemaName = &Identifier{
+		Token: token.Token{
+			Type:    token.Identifier,
+			Literal: `"` + schema + `"`,
+			Line:    0,
+		},
+		Value: schema,
+	}
+}
 
 func (createTableStatement *CreateTableStatement) WriteStringTo(w io.StringWriter) {
 	_, _ = w.WriteString("CREATE TABLE ")
-	if createTableStatement.schemaName != "" {
-		_, _ = w.WriteString(fmt.Sprintf(`"%s".`, createTableStatement.schemaName))
+	if createTableStatement.SchemaName != nil {
+		createTableStatement.SchemaName.WriteStringTo(w)
+		_, _ = w.WriteString(".")
 	}
 	createTableStatement.TableName.WriteStringTo(w)
 	_, _ = w.WriteString(" (\n")

@@ -39,13 +39,39 @@ func TestProcess(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "create table",
+			name: "create table with default schema",
 			args: args{
 				source:  newReader(``),
 				desired: newReader(`CREATE TABLE "x" ( id bigint );`),
 			},
 			want: `
 CREATE TABLE "public"."x" (
+    "id" bigint
+);`,
+			wantErr: false,
+		},
+		{
+			name: "create table with explicit schema",
+			args: args{
+				source:  newReader(``),
+				desired: newReader(`CREATE TABLE "myschema"."x" ( id bigint );`),
+			},
+			want: `
+CREATE TABLE "myschema"."x" (
+    "id" bigint
+);`,
+			wantErr: false,
+		},
+		{
+			name: "set search_path and create table",
+			args: args{
+				source: newReader(``),
+				desired: newReader(`
+SET search_path = "myschema", pg_catalog;
+CREATE TABLE "x" ( id bigint );`),
+			},
+			want: `
+CREATE TABLE "myschema"."x" (
     "id" bigint
 );`,
 			wantErr: false,

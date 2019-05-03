@@ -228,6 +228,7 @@ func (df *Diff) alterColumn(table *Table, sourceColumn *Column, desiredColumn *C
 
 func (df *Diff) createIndex(_ *Table, index *Index) {
 	index.CreateIndexStatement.WriteStringTo(df.stringBuilder)
+	df.WriteString("\n")
 }
 
 func (df *Diff) dropIndex(table *Table, index *Index) {

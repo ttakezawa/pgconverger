@@ -118,6 +118,10 @@ func TestCreateIndexStatement(t *testing.T) {
 			`CREATE INDEX "users_deleted_at_and_name_key" ON "users" USING "btree" ((("deleted_at" IS NULL)), "name");`,
 			`CREATE INDEX "users_deleted_at_and_name_key" ON "users" USING "btree" ((("deleted_at" IS NULL)), "name");`,
 		},
+		{
+			`CREATE INDEX user_id ON public.users USING btree (user_id);`,
+			`CREATE INDEX "user_id" ON "public"."users" USING "btree" ("user_id");`,
+		},
 	}
 
 	for i, tt := range tests {

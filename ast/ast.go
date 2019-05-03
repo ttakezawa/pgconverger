@@ -267,7 +267,7 @@ type CreateIndexStatement struct {
 	Concurrently bool
 	IfNotExists  bool
 	Name         *Identifier
-	TableName    *Identifier
+	TableName    *TableName
 	UsingMethod  *Identifier
 	IndexTargets []Node // Slice of (Identifier OR Expression)
 }

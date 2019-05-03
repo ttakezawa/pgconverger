@@ -611,11 +611,11 @@ func (p *Parser) parseCreateIndexStatement() ast.Statement {
 	}
 
 	p.advance()
-	identifier = p.parseIdentifier()
-	if identifier == nil {
+	tableName := p.parseTableName()
+	if tableName == nil {
 		return nil
 	}
-	createIndexStatement.TableName = identifier
+	createIndexStatement.TableName = tableName
 
 	if p.peekToken.Type == token.Using {
 		p.advance()

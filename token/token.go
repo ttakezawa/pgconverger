@@ -55,6 +55,7 @@ const (
 	Null
 	On
 	Only
+	Operator
 	Owner
 	Schema
 	Select
@@ -63,6 +64,7 @@ const (
 	Start
 	Table
 	To
+	Trigger
 	True
 	Unique
 	Update
@@ -131,6 +133,7 @@ var keywords = map[string]keyword{
 	"NUMERIC":      {Numeric, false},
 	"ON":           {On, true},
 	"ONLY":         {Only, true},
+	"OPERATOR":     {Operator, false},
 	"OWNER":        {Owner, false},
 	"SCHEMA":       {Schema, false},
 	"SELECT":       {Select, true},
@@ -143,6 +146,7 @@ var keywords = map[string]keyword{
 	"TIME":         {Time, false},
 	"TIMESTAMP":    {Timestamp, false},
 	"TO":           {To, true},
+	"TRIGGER":      {Trigger, false},
 	"TRUE":         {True, true},
 	"TSVECTOR":     {Tsvector, false},
 	"UNIQUE":       {Unique, true},

@@ -122,6 +122,10 @@ func TestCreateIndexStatement(t *testing.T) {
 			`CREATE INDEX user_id ON public.users USING btree (user_id);`,
 			`CREATE INDEX "user_id" ON "public"."users" USING "btree" ("user_id");`,
 		},
+		{
+			`CREATE INDEX idx ON public.users USING btree (id, created_at DESC);`,
+			`CREATE INDEX "idx" ON "public"."users" USING "btree"" ("type", "created_at" DESC);`,
+		},
 	}
 
 	for i, tt := range tests {

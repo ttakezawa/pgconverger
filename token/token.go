@@ -17,6 +17,7 @@ const (
 	Identifier
 	String
 	Number
+	Dot
 	Semicolon
 	Comma
 	LParen

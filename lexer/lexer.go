@@ -121,7 +121,7 @@ func lexFn(l *Lexer) stateFn {
 		return lexDoubleQuoteIdentifier
 	case isIdentifierStart(l.char):
 		return lexIdentifier
-	case isNumberStart(l.char):
+	case isNumberStart(l.char, l.peekChar()):
 		return lexNumber
 	case l.char == '\'':
 		return lexString
@@ -145,6 +145,9 @@ func lexFn(l *Lexer) stateFn {
 	case l.char == ',':
 		l.advance()
 		l.emit(token.Comma)
+	case l.char == '.':
+		l.advance()
+		l.emit(token.Dot)
 	case l.char == '(':
 		l.advance()
 		l.emit(token.LParen)
@@ -296,8 +299,8 @@ Loop:
 	return lexFn
 }
 
-func isNumberStart(r rune) bool {
-	return unicode.IsDigit(r) || r == '.'
+func isNumberStart(r rune, peek rune) bool {
+	return unicode.IsDigit(r) || (r == '.' && unicode.IsDigit(peek))
 }
 
 // -- This is a standard SQL comment

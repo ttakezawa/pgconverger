@@ -34,5 +34,6 @@ func main() {
 		fmt.Printf("%+v", err)
 		return
 	}
-	log.Printf("Diff: \n%s", ddl)
+	log.Printf("Diff:")
+	fmt.Println(ddl)
 }

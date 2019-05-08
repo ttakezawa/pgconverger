@@ -32,6 +32,7 @@ const (
 	Add
 	Alter
 	Asc
+	BackslashConnect
 	By
 	Cache
 	Column
@@ -105,6 +106,7 @@ var keywords = map[string]keyword{
 	"ADD":          {Add, false},
 	"ALTER":        {Alter, false},
 	"ASC":          {Asc, true},
+	"\\CONNECT":    {BackslashConnect, false},
 	"BIGINT":       {Bigint, false},
 	"BIGSERIAL":    {Bigserial, false},
 	"BOOLEAN":      {Boolean, false},

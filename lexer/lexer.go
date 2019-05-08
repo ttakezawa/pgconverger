@@ -218,7 +218,7 @@ func lexIdentifier(l *Lexer) stateFn {
 }
 
 func isIdentifierStart(r rune) bool {
-	return unicode.IsLetter(r) || r == '_'
+	return unicode.IsLetter(r) || r == '_' || r == '\\'
 }
 
 func isIdentifierCont(r rune) bool {

@@ -179,6 +179,9 @@ func (p *Parser) parseStatement() ast.Statement {
 	switch p.token.Type {
 	case token.Create:
 		switch p.peekToken.Type {
+		case token.Database:
+			// Not yet implemented
+			return nil
 		case token.Schema:
 			return p.parseCreateSchemaStatement()
 		case token.Table:
@@ -202,6 +205,9 @@ func (p *Parser) parseStatement() ast.Statement {
 		case token.Trigger:
 			// Not yet implemented
 			return nil
+		case token.Role:
+			// Not yet implemented
+			return nil
 		default:
 			p.errorf(p.peekToken.Line, "unknown token: CREATE %s", p.peekToken.Literal)
 		}
@@ -212,6 +218,9 @@ func (p *Parser) parseStatement() ast.Statement {
 			return nil
 		}
 	case token.Grant:
+		// Not yet implemented
+		return nil
+	case token.Revoke:
 		// Not yet implemented
 		return nil
 	case token.Set:

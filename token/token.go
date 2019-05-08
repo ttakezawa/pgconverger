@@ -38,6 +38,7 @@ const (
 	Concurrently
 	Constraint
 	Create
+	Database
 	Default
 	Desc
 	Exists
@@ -59,6 +60,8 @@ const (
 	Only
 	Operator
 	Owner
+	Revoke
+	Role
 	Schema
 	Select
 	Sequence
@@ -114,6 +117,7 @@ var keywords = map[string]keyword{
 	"CONCURRENTLY": {Concurrently, true}, // reserved (can be function or type)
 	"CONSTRAINT":   {Constraint, true},
 	"CREATE":       {Create, true},
+	"DATABASE":     {Database, false},
 	"DATE":         {Date, false},
 	"DEFAULT":      {Default, true},
 	"DESC":         {Desc, true},
@@ -139,6 +143,8 @@ var keywords = map[string]keyword{
 	"ONLY":         {Only, true},
 	"OPERATOR":     {Operator, false},
 	"OWNER":        {Owner, false},
+	"REVOKE":       {Revoke, false},
+	"ROLE":         {Role, false},
 	"SCHEMA":       {Schema, false},
 	"SELECT":       {Select, true},
 	"SEQUENCE":     {Sequence, false},

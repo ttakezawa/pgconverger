@@ -169,7 +169,7 @@ func (df *Diff) diffTable(sourceTable, desiredTable *Table) {
 }
 
 func (df *Diff) addColumn(table *Table, column *Column) {
-	df.WriteString(fmt.Sprintf("ALTER TABLE %s ADD COLUMN \"%s\" \"%s\";\n",
+	df.WriteString(fmt.Sprintf("ALTER TABLE %s ADD COLUMN \"%s\" %s;\n",
 		table.Identifier,
 		column.Name,
 		column.DataType,
@@ -185,7 +185,7 @@ func (df *Diff) dropColumn(table *Table, column *Column) {
 
 func (df *Diff) alterColumn(table *Table, sourceColumn *Column, desiredColumn *Column) {
 	if sourceColumn.DataType != desiredColumn.DataType {
-		df.WriteString(fmt.Sprintf("ALTER TABLE %s ALTER COLUMN \"%s\" TYPE \"%s\";\n",
+		df.WriteString(fmt.Sprintf("ALTER TABLE %s ALTER COLUMN \"%s\" TYPE %s;\n",
 			table.Identifier,
 			desiredColumn.Name,
 			desiredColumn.DataType,

@@ -91,7 +91,7 @@ CREATE TABLE "myschema"."x" (
 				source:  newReader(`CREATE TABLE "x" ( id bigint );`),
 				desired: newReader(`CREATE TABLE "x" ( id bigint, n text );`),
 			},
-			want:    `ALTER TABLE "public"."x" ADD COLUMN "n" "text";`,
+			want:    `ALTER TABLE "public"."x" ADD COLUMN "n" text;`,
 			wantErr: false,
 		},
 		{
@@ -109,7 +109,7 @@ CREATE TABLE "myschema"."x" (
 				source:  newReader(`CREATE TABLE "x" ( id bigint, n bigint );`),
 				desired: newReader(`CREATE TABLE "x" ( id bigint, n text );`),
 			},
-			want:    `ALTER TABLE "public"."x" ALTER COLUMN "n" TYPE "text";`,
+			want:    `ALTER TABLE "public"."x" ALTER COLUMN "n" TYPE text;`,
 			wantErr: false,
 		},
 		{
@@ -155,7 +155,7 @@ CREATE TABLE "myschema"."x" (
 				desired: newReader(`CREATE TABLE "x" ( id bigint, n bigint DEFAULT 42);`),
 			},
 			want: `
-ALTER TABLE "public"."x" ALTER COLUMN "n" TYPE "bigint";
+ALTER TABLE "public"."x" ALTER COLUMN "n" TYPE bigint;
 ALTER TABLE "public"."x" ALTER COLUMN "n" SET DEFAULT 42;`,
 			wantErr: false,
 		},

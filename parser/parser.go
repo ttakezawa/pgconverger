@@ -231,6 +231,9 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.Comment:
 		// Not yet implemented
 		return nil
+	case token.BackslashConnect:
+		// Not yet implemented
+		return nil
 	default:
 		p.errorf(p.token.Line, "unknown token: %s", p.token.Literal)
 	}

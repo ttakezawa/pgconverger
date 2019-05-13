@@ -58,6 +58,25 @@ func (tableName *TableName) SetSchema(schema string) {
 	}
 }
 
+type SequenceName struct {
+	SchemaIdentifier   *Identifier
+	SequenceIdentifier *Identifier
+}
+
+func (sequenceName *SequenceName) WriteStringTo(w io.StringWriter) {
+	if sequenceName.SchemaIdentifier != nil {
+		sequenceName.SchemaIdentifier.WriteStringTo(w)
+		_, _ = w.WriteString(`.`)
+	}
+	sequenceName.SequenceIdentifier.WriteStringTo(w)
+}
+
+func (sequenceName *SequenceName) String() string {
+	var builder strings.Builder
+	sequenceName.WriteStringTo(&builder)
+	return builder.String()
+}
+
 type Identifier struct {
 	Token token.Token
 	Value string
@@ -389,8 +408,8 @@ func (createSequenceStatement *CreateSequenceStatement) WriteStringTo(w io.Strin
 }
 
 type AlterSequenceStatement struct {
-	Name          *Identifier
-	OwnedByTable  *Identifier
+	Name          *SequenceName
+	OwnedByTable  *TableName
 	OwnedByColumn *Identifier
 }
 

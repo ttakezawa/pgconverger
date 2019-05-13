@@ -213,6 +213,14 @@ func TestAlterSequenceStatement(t *testing.T) {
 			`ALTER SEQUENCE "users_id_seq" OWNED BY "users"."id";`,
 			`ALTER SEQUENCE "users_id_seq" OWNED BY "users"."id";`,
 		},
+		{
+			`ALTER SEQUENCE "users_id_seq" OWNED BY "public"."users"."id";`,
+			`ALTER SEQUENCE "users_id_seq" OWNED BY "public"."users"."id";`,
+		},
+		{
+			`ALTER SEQUENCE public.users_id_seq OWNED BY "public"."users"."id";`,
+			`ALTER SEQUENCE "public"."users_id_seq" OWNED BY "public"."users"."id";`,
+		},
 	}
 
 	for i, tt := range tests {

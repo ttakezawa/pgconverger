@@ -334,6 +334,31 @@ func (p *Parser) parseTableName() *ast.TableName {
 	return &tableName
 }
 
+// "sequence_name" | "schema_name"."sequence_name"
+func (p *Parser) parseSequenceName() *ast.SequenceName {
+	var sequenceName ast.SequenceName
+
+	identifier := p.parseIdentifier()
+	if identifier == nil {
+		return nil
+	}
+	if p.peekToken.Type != token.Dot {
+		// Case: CREATE SEQUENCE "sequence_name" ( ...
+		sequenceName.SequenceIdentifier = identifier
+	} else {
+		// Case: CREATE SEQUENCE "schema_name"."sequence_name" ( ...
+		sequenceName.SchemaIdentifier = identifier
+		p.advance()
+		p.advance()
+		identifier := p.parseIdentifier()
+		if identifier == nil {
+			return nil
+		}
+		sequenceName.SequenceIdentifier = identifier
+	}
+	return &sequenceName
+}
+
 func (p *Parser) parseIdentifierAsExpression() ast.Expression {
 	return p.parseIdentifier()
 }
@@ -760,11 +785,11 @@ func (p *Parser) parseAlterSequenceStatement() ast.Statement {
 	}
 
 	p.advance()
-	identifier := p.parseIdentifier()
-	if identifier == nil {
+	sequenceName := p.parseSequenceName()
+	if sequenceName == nil {
 		return nil
 	}
-	alterSequenceStatement.Name = identifier
+	alterSequenceStatement.Name = sequenceName
 
 	if !p.expectPeek(token.Owned) {
 		return nil
@@ -774,22 +799,39 @@ func (p *Parser) parseAlterSequenceStatement() ast.Statement {
 	}
 
 	p.advance()
-	ownedByTable := p.parseIdentifier()
-	if ownedByTable == nil {
+	ownedByID1 := p.parseIdentifier()
+	if ownedByID1 == nil {
 		return nil
 	}
-	alterSequenceStatement.OwnedByTable = ownedByTable
 
 	if !p.expectPeek(token.Dot) {
 		return nil
 	}
 
 	p.advance()
-	ownedByColumn := p.parseIdentifier()
-	if ownedByColumn == nil {
+	ownedByID2 := p.parseIdentifier()
+	if ownedByID2 == nil {
 		return nil
 	}
-	alterSequenceStatement.OwnedByColumn = ownedByColumn
+
+	if p.peekToken.Type == token.Dot {
+		p.advance()
+		p.advance()
+		ownedByColumn := p.parseIdentifier()
+		if ownedByColumn == nil {
+			return nil
+		}
+		alterSequenceStatement.OwnedByColumn = ownedByColumn
+		alterSequenceStatement.OwnedByTable = &ast.TableName{
+			SchemaIdentifier: ownedByID1,
+			TableIdentifier:  ownedByID2,
+		}
+	} else {
+		alterSequenceStatement.OwnedByColumn = ownedByID2
+		alterSequenceStatement.OwnedByTable = &ast.TableName{
+			TableIdentifier: ownedByID1,
+		}
+	}
 
 	return alterSequenceStatement
 }

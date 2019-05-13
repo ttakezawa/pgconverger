@@ -216,6 +216,8 @@ func (p *Parser) parseStatement() ast.Statement {
 		case token.Schema:
 			// Not yet implemented
 			return nil
+		case token.Sequence:
+			return p.parseAlterSequenceStatement()
 		}
 	case token.Grant:
 		// Not yet implemented
@@ -748,6 +750,48 @@ func (p *Parser) parseIndexTargets() []*ast.IndexTarget {
 		}
 		p.advance()
 	}
+}
+
+func (p *Parser) parseAlterSequenceStatement() ast.Statement {
+	alterSequenceStatement := &ast.AlterSequenceStatement{}
+
+	if !p.expectPeek(token.Sequence) {
+		return nil
+	}
+
+	p.advance()
+	identifier := p.parseIdentifier()
+	if identifier == nil {
+		return nil
+	}
+	alterSequenceStatement.Name = identifier
+
+	if !p.expectPeek(token.Owned) {
+		return nil
+	}
+	if !p.expectPeek(token.By) {
+		return nil
+	}
+
+	p.advance()
+	ownedByTable := p.parseIdentifier()
+	if ownedByTable == nil {
+		return nil
+	}
+	alterSequenceStatement.OwnedByTable = ownedByTable
+
+	if !p.expectPeek(token.Dot) {
+		return nil
+	}
+
+	p.advance()
+	ownedByColumn := p.parseIdentifier()
+	if ownedByColumn == nil {
+		return nil
+	}
+	alterSequenceStatement.OwnedByColumn = ownedByColumn
+
+	return alterSequenceStatement
 }
 
 // SET name = { value | 'value' | DEFAULT }

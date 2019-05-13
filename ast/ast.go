@@ -387,3 +387,21 @@ func (createSequenceStatement *CreateSequenceStatement) WriteStringTo(w io.Strin
 	}
 	_, _ = w.WriteString(";")
 }
+
+type AlterSequenceStatement struct {
+	Name          *Identifier
+	OwnedByTable  *Identifier
+	OwnedByColumn *Identifier
+}
+
+func (*AlterSequenceStatement) statementNode() {}
+
+func (alterSequenceStatement *AlterSequenceStatement) WriteStringTo(w io.StringWriter) {
+	_, _ = w.WriteString("ALTER SEQUENCE ")
+	alterSequenceStatement.Name.WriteStringTo(w)
+	_, _ = w.WriteString(" OWNED BY ")
+	alterSequenceStatement.OwnedByTable.WriteStringTo(w)
+	_, _ = w.WriteString(".")
+	alterSequenceStatement.OwnedByColumn.WriteStringTo(w)
+	_, _ = w.WriteString(";")
+}

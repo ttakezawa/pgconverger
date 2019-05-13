@@ -137,6 +137,10 @@ func (df *Diff) generatePatch() string {
 
 func (df *Diff) createTable(table *Table) {
 	table.CreateTableStatement.WriteStringTo(df.stringBuilder)
+	for _, index := range table.Indexes {
+		index.CreateIndexStatement.WriteStringTo(df.stringBuilder)
+		df.stringBuilder.WriteString("\n")
+	}
 }
 
 func (df *Diff) dropTable(table *Table) {

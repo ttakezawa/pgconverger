@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"sort"
 	"strings"
 
 	"github.com/ttakezawa/pgconverger/ast"
@@ -99,11 +100,20 @@ type (
 	}
 )
 
+func (tables Tables) SortedKeys() (keys []string) {
+	for k := range tables {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return
+}
+
 func (df *Diff) generatePatch() string {
 	df.sourceTables = processDDL(df.sourceDDL)
 	df.desiredTables = processDDL(df.desiredDDL)
 
-	for identifier, sourceTable := range df.sourceTables {
+	for _, identifier := range df.sourceTables.SortedKeys() {
+		sourceTable := df.sourceTables[identifier]
 		desiredTable := df.desiredTables.FindTable(identifier)
 		if desiredTable != nil {
 			df.diffTable(sourceTable, desiredTable)
@@ -112,7 +122,8 @@ func (df *Diff) generatePatch() string {
 		}
 	}
 
-	for identifier, desiredTable := range df.desiredTables {
+	for _, identifier := range df.desiredTables.SortedKeys() {
+		desiredTable := df.desiredTables[identifier]
 		sourceTable := df.sourceTables.FindTable(identifier)
 		if sourceTable != nil {
 			// none

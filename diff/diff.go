@@ -146,7 +146,7 @@ func (df *Diff) dropTable(table *Table) {
 // generate DDL for a table which exists in both.
 func (df *Diff) diffTable(sourceTable, desiredTable *Table) {
 	for _, sourceColumn := range sourceTable.Columns {
-		desiredColumn, ok := desiredTable.Columns[sourceColumn.Name] //
+		desiredColumn, ok := desiredTable.Columns[sourceColumn.Name]
 		if ok {
 			df.alterColumn(sourceTable, sourceColumn, desiredColumn)
 		} else {
@@ -155,7 +155,7 @@ func (df *Diff) diffTable(sourceTable, desiredTable *Table) {
 	}
 
 	for _, desiredColumn := range desiredTable.Columns {
-		_, ok := sourceTable.Columns[desiredColumn.Name] //
+		_, ok := sourceTable.Columns[desiredColumn.Name]
 		if !ok {
 			df.addColumn(sourceTable, desiredColumn)
 		}
@@ -172,7 +172,7 @@ func (df *Diff) diffTable(sourceTable, desiredTable *Table) {
 	}
 
 	for _, desiredIndex := range desiredTable.Indexes {
-		_, ok := sourceTable.Indexes[desiredIndex.Name] //
+		_, ok := sourceTable.Indexes[desiredIndex.Name]
 		if !ok {
 			df.createIndex(sourceTable, desiredIndex)
 		}

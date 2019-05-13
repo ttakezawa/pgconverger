@@ -60,6 +60,7 @@ const (
 	On
 	Only
 	Operator
+	Owned
 	Owner
 	Revoke
 	Role
@@ -144,6 +145,7 @@ var keywords = map[string]keyword{
 	"ON":           {On, true},
 	"ONLY":         {Only, true},
 	"OPERATOR":     {Operator, false},
+	"OWNED":        {Owned, false},
 	"OWNER":        {Owner, false},
 	"REVOKE":       {Revoke, false},
 	"ROLE":         {Role, false},

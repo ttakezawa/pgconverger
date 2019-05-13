@@ -88,10 +88,11 @@ type (
 	}
 
 	Column struct {
-		Name     string
-		DataType string
-		NotNull  bool
-		Default  string
+		Name         string
+		DataType     string
+		NotNull      bool
+		Default      string
+		SequenceName string
 	}
 
 	Index struct {
@@ -137,6 +138,11 @@ func (df *Diff) generatePatch() string {
 
 func (df *Diff) createTable(table *Table) {
 	table.CreateTableStatement.WriteStringTo(df.stringBuilder)
+	for _, column := range table.Columns {
+		if column.SequenceName != "" {
+			df.addSequence(table, column)
+		}
+	}
 	for _, index := range table.Indexes {
 		index.CreateIndexStatement.WriteStringTo(df.stringBuilder)
 		df.stringBuilder.WriteString("\n")
@@ -189,6 +195,27 @@ func (df *Diff) addColumn(table *Table, column *Column) {
 		column.Name,
 		column.DataType,
 	))
+}
+
+func (df *Diff) addSequence(table *Table, column *Column) {
+	var (
+		schemaName = table.CreateTableStatement.TableName.SchemaIdentifier.Value
+		tableName  = table.CreateTableStatement.TableName.TableIdentifier.Value
+		columnName = column.Name
+		sequence   = column.SequenceName
+	)
+	df.WriteString(
+		fmt.Sprintf(`CREATE SEQUENCE "%s"."%s"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER SEQUENCE "%s"."%s" OWNED BY "%s"."%s";`,
+			schemaName, sequence,
+			schemaName, sequence, tableName, columnName),
+	)
+	df.WriteString("\n")
 }
 
 func (df *Diff) dropColumn(table *Table, column *Column) {
@@ -256,6 +283,10 @@ func (tables Tables) FindTable(identifier string) *Table {
 	return tables[identifier]
 }
 
+func (tables Tables) FindTableBy(searchPath, tableName string) *Table {
+	return tables[`"`+searchPath+`"."`+tableName+`"`]
+}
+
 func (tables Tables) AddTable(searchPath string, createTableStatement *ast.CreateTableStatement) {
 	if createTableStatement.TableName.SchemaIdentifier == nil {
 		createTableStatement.TableName.SetSchema(searchPath)
@@ -293,6 +324,22 @@ func (tables Tables) AddIndex(searchPath string, createIndexStatement *ast.Creat
 	}
 }
 
+func (tables Tables) AddSequence(searchPath string, alterSequenceStatement *ast.AlterSequenceStatement) {
+	tableName := alterSequenceStatement.OwnedByTable.TableIdentifier.Value
+	table := tables.FindTableBy(searchPath, tableName)
+	if table == nil {
+		log.Printf("irregular alter sequence to unknown table=%s", tableName)
+		return
+	}
+	columnName := alterSequenceStatement.OwnedByColumn.Value
+	column := table.Columns[columnName]
+	if column == nil {
+		log.Printf("irregular alter sequence to unknown column=%s", columnName)
+		return
+	}
+	column.SequenceName = alterSequenceStatement.Name.SequenceIdentifier.Value
+}
+
 // processDDL converts to schema and table mappings
 func processDDL(ddl *ast.DataDefinition) Tables {
 	var tables = make(Tables)
@@ -313,6 +360,8 @@ func processDDL(ddl *ast.DataDefinition) Tables {
 			tables.AddTable(searchPath, stmt)
 		case *ast.CreateIndexStatement:
 			tables.AddIndex(searchPath, stmt)
+		case *ast.AlterSequenceStatement:
+			tables.AddSequence(searchPath, stmt)
 		default:
 			log.Printf("skip statement: %v", stmt)
 		}

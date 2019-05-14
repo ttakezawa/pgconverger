@@ -216,6 +216,8 @@ func (p *Parser) parseStatement() ast.Statement {
 		case token.Schema:
 			// Not yet implemented
 			return nil
+		case token.Table:
+			return p.parseAlterTableStatement()
 		case token.Sequence:
 			return p.parseAlterSequenceStatement()
 		}
@@ -834,6 +836,103 @@ func (p *Parser) parseAlterSequenceStatement() ast.Statement {
 	}
 
 	return alterSequenceStatement
+}
+
+func (p *Parser) parseAlterTableStatement() ast.Statement {
+	alterTableStatement := &ast.AlterTableStatement{}
+
+	if !p.expectPeek(token.Table) {
+		return nil
+	}
+
+	if p.peekToken.Type == token.Only {
+		alterTableStatement.Only = true
+		p.advance()
+	}
+
+	p.advance()
+	tableName := p.parseTableName()
+	if tableName == nil {
+		return nil
+	}
+	alterTableStatement.Name = tableName
+
+	if !p.expectPeek(token.Add) {
+		// NOTE: Currently, ADD CONSTRAINT of ALTER TABLE is only supported.
+		return nil
+	}
+	if !p.expectPeek(token.Constraint) {
+		// NOTE: Currently, ADD CONSTRAINT of ALTER TABLE is only supported.
+		return nil
+	}
+
+	tableConstraint := p.parseTableConstraint()
+	if tableConstraint == nil {
+		return nil
+	}
+	alterTableStatement.Actions = append(alterTableStatement.Actions, tableConstraint)
+
+	return alterTableStatement
+}
+
+// [ CONSTRAINT constraint_name ]
+// { CHECK ( expression ) [ NO INHERIT ] |
+//   UNIQUE ( column_name [, ... ] ) index_parameters |
+//   PRIMARY KEY ( column_name [, ... ] ) index_parameters |
+//   EXCLUDE [ USING index_method ] ( exclude_element WITH operator [, ... ] ) index_parameters [ WHERE ( predicate ) ] |
+//   FOREIGN KEY ( column_name [, ... ] ) REFERENCES reftable [ ( refcolumn [, ... ] ) ]
+//     [ MATCH FULL | MATCH PARTIAL | MATCH SIMPLE ] [ ON DELETE action ] [ ON UPDATE action ] }
+// [ DEFERRABLE | NOT DEFERRABLE ] [ INITIALLY DEFERRED | INITIALLY IMMEDIATE ]
+func (p *Parser) parseTableConstraint() ast.Node {
+	tableConstraint := &ast.TableConstraint{}
+	if p.token.Type == token.Constraint {
+		p.advance()
+		identifier := p.parseIdentifier()
+		tableConstraint.Name = identifier
+	}
+	if p.peekToken.Type == token.Unique {
+		tableConstraint.Unique = true
+		p.advance()
+		p.advance()
+		columnList := p.parseColumnList()
+		if columnList == nil {
+			return nil
+		}
+		tableConstraint.ColumnList = columnList
+	}
+	if p.peekToken.Type == token.Primary {
+		p.advance()
+		if !p.expectPeek(token.Key) {
+			return nil
+		}
+		tableConstraint.PrimaryKey = true
+		p.advance()
+		columnList := p.parseColumnList()
+		if columnList == nil {
+			return nil
+		}
+		tableConstraint.ColumnList = columnList
+	}
+	return tableConstraint
+}
+
+func (p *Parser) parseColumnList() *ast.ColumnList {
+	columnList := &ast.ColumnList{}
+	_, ok := p.expect(token.LParen)
+	if !ok {
+		return nil
+	}
+	for p.token.Type != token.RParen {
+		column := p.parseIdentifier()
+		if column != nil {
+			columnList.ColumnNames = append(columnList.ColumnNames, column)
+		}
+		p.advance()
+		if p.token.Type == token.Comma {
+			p.advance()
+		}
+	}
+	return columnList
 }
 
 // SET name = { value | 'value' | DEFAULT }

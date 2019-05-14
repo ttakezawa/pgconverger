@@ -216,6 +216,21 @@ func (indexTarget *IndexTarget) WriteStringTo(w io.StringWriter) {
 	}
 }
 
+type ColumnList struct {
+	ColumnNames []*Identifier
+}
+
+func (columnList *ColumnList) WriteStringTo(w io.StringWriter) {
+	_, _ = w.WriteString("(")
+	for i, name := range columnList.ColumnNames {
+		if i != 0 {
+			_, _ = w.WriteString(", ")
+		}
+		name.WriteStringTo(w)
+	}
+	_, _ = w.WriteString(")")
+}
+
 type InfixExpression struct {
 	Left     Expression
 	Operator token.Token
@@ -422,5 +437,47 @@ func (alterSequenceStatement *AlterSequenceStatement) WriteStringTo(w io.StringW
 	alterSequenceStatement.OwnedByTable.WriteStringTo(w)
 	_, _ = w.WriteString(".")
 	alterSequenceStatement.OwnedByColumn.WriteStringTo(w)
+	_, _ = w.WriteString(";")
+}
+
+type AlterTableStatement struct {
+	Name    *TableName
+	Only    bool
+	Actions []Node
+}
+
+func (*AlterTableStatement) statementNode() {}
+
+func (alterTableStatement *AlterTableStatement) WriteStringTo(w io.StringWriter) {
+	_, _ = w.WriteString("ALTER TABLE ")
+	if alterTableStatement.Only {
+		_, _ = w.WriteString("ONLY ")
+	}
+	alterTableStatement.Name.WriteStringTo(w)
+	_, _ = w.WriteString("\n")
+	for _, action := range alterTableStatement.Actions {
+		_, _ = w.WriteString("    ")
+		action.WriteStringTo(w)
+	}
+}
+
+type TableConstraint struct {
+	Name       *Identifier
+	Unique     bool
+	PrimaryKey bool
+	ColumnList *ColumnList
+}
+
+func (tableConstraint *TableConstraint) WriteStringTo(w io.StringWriter) {
+	_, _ = w.WriteString("ADD CONSTRAINT ")
+	tableConstraint.Name.WriteStringTo(w)
+	if tableConstraint.PrimaryKey {
+		_, _ = w.WriteString(" PRIMARY KEY ")
+		tableConstraint.ColumnList.WriteStringTo(w)
+	}
+	if tableConstraint.Unique {
+		_, _ = w.WriteString(" UNIQUE ")
+		tableConstraint.ColumnList.WriteStringTo(w)
+	}
 	_, _ = w.WriteString(";")
 }

@@ -234,3 +234,34 @@ func TestAlterSequenceStatement(t *testing.T) {
 		checkParserErrors(t, p)
 	}
 }
+
+func TestAlterTableStatement(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{
+			`ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);`,
+			`ALTER TABLE ONLY "public"."users"
+    ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");`,
+		},
+		{
+			`ALTER TABLE ONLY users
+    ADD CONSTRAINT users_name_key UNIQUE (name);`,
+			`ALTER TABLE ONLY "users"
+    ADD CONSTRAINT "users_name_key" UNIQUE ("name");`,
+		},
+	}
+
+	for i, tt := range tests {
+		p := New(lexer.Lex("<input>", tt.input))
+		dataDefinition := p.ParseDataDefinition()
+		var builder strings.Builder
+		dataDefinition.WriteStringTo(&builder)
+		if builder.String() != tt.expected {
+			t.Errorf("case%d:\n\tgot  =      %q,\n\twant =      %q", i+1, builder.String(), tt.expected)
+		}
+		checkParserErrors(t, p)
+	}
+}

@@ -52,6 +52,7 @@ const (
 	Index
 	Insert
 	Is
+	Key
 	Maxvalue
 	Minvalue
 	No
@@ -62,6 +63,7 @@ const (
 	Operator
 	Owned
 	Owner
+	Primary
 	Revoke
 	Role
 	Schema
@@ -136,6 +138,7 @@ var keywords = map[string]keyword{
 	"INTEGER":      {Integer, false},
 	"IS":           {Is, true}, // reserved (can be function or type)
 	"JSONB":        {Jsonb, false},
+	"KEY":          {Key, false},
 	"MAXVALUE":     {Maxvalue, false},
 	"MINVALUE":     {Minvalue, false},
 	"NO":           {No, false},
@@ -147,6 +150,7 @@ var keywords = map[string]keyword{
 	"OPERATOR":     {Operator, false},
 	"OWNED":        {Owned, false},
 	"OWNER":        {Owner, false},
+	"PRIMARY":      {Primary, true},
 	"REVOKE":       {Revoke, false},
 	"ROLE":         {Role, false},
 	"SCHEMA":       {Schema, false},

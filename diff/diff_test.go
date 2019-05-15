@@ -77,6 +77,36 @@ CREATE TABLE "myschema"."x" (
 			wantErr: false,
 		},
 		{
+			name: "create table with primary key",
+			args: args{
+				source: newReader(``),
+				desired: newReader(`
+CREATE TABLE users (id bigint);
+ALTER TABLE ONLY public.users ADD CONSTRAINT users_pkey PRIMARY KEY (id);`),
+			},
+			want: `
+CREATE TABLE "public"."users" (
+    "id" bigint
+);
+ALTER TABLE ONLY "public"."users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");`,
+			wantErr: false,
+		},
+		{
+			name: "create table with unique",
+			args: args{
+				source: newReader(``),
+				desired: newReader(`
+CREATE TABLE users (id bigint);
+ALTER TABLE ONLY public.users ADD CONSTRAINT users_pkey UNIQUE (id);`),
+			},
+			want: `
+CREATE TABLE "public"."users" (
+    "id" bigint
+);
+ALTER TABLE ONLY "public"."users" ADD CONSTRAINT "users_pkey" UNIQUE ("id");`,
+			wantErr: false,
+		},
+		{
 			name: "drop table",
 			args: args{
 				source:  newReader(`CREATE TABLE "x" ( id bigint );`),

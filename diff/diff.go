@@ -76,15 +76,17 @@ func (df *Diff) ErrorOrNil() error {
 }
 
 type (
-	Tables  map[string]*Table
-	Indexes map[string]*Index
+	Tables           map[string]*Table
+	Indexes          map[string]*Index
+	TableConstraints map[string]*TableConstraint
 
 	Table struct {
 		CreateTableStatement *ast.CreateTableStatement
 		string
-		Identifier string
-		Columns    map[string]*Column
-		Indexes    Indexes
+		Identifier       string
+		Columns          map[string]*Column
+		Indexes          Indexes
+		TableConstraints TableConstraints
 	}
 
 	Column struct {
@@ -99,6 +101,19 @@ type (
 		CreateIndexStatement *ast.CreateIndexStatement
 		Name                 string
 	}
+
+	TableConstraint struct {
+		Name    string
+		Type    ConstraintType
+		Columns []string
+	}
+)
+
+type ConstraintType string
+
+const (
+	Unique     ConstraintType = "UNIQUE"
+	PrimaryKey ConstraintType = "PRIMARY KEY"
 )
 
 func (tables Tables) SortedKeys() (keys []string) {
@@ -146,6 +161,9 @@ func (df *Diff) createTable(table *Table) {
 	for _, index := range table.Indexes {
 		index.CreateIndexStatement.WriteStringTo(df.stringBuilder)
 		df.stringBuilder.WriteString("\n")
+	}
+	for _, constraint := range table.TableConstraints {
+		df.addTableConstraint(table, constraint)
 	}
 }
 
@@ -216,6 +234,23 @@ ALTER SEQUENCE "%s"."%s" OWNED BY "%s"."%s";`,
 			schemaName, sequence, tableName, columnName),
 	)
 	df.WriteString("\n")
+}
+
+func (df *Diff) addTableConstraint(table *Table, tableConstraint *TableConstraint) {
+	df.WriteString(fmt.Sprintf(
+		`ALTER TABLE ONLY %s ADD CONSTRAINT "%s" %s (`,
+		table.Identifier,
+		tableConstraint.Name,
+		tableConstraint.Type,
+	))
+
+	for i, c := range tableConstraint.Columns {
+		if i != 0 {
+			df.WriteString(", ")
+		}
+		df.WriteString(fmt.Sprintf(`"%s"`, c))
+	}
+	df.WriteString(");")
 }
 
 func (df *Diff) dropColumn(table *Table, column *Column) {
@@ -304,6 +339,7 @@ func (tables Tables) AddTable(searchPath string, createTableStatement *ast.Creat
 		Identifier:           identifier,
 		Columns:              columns,
 		Indexes:              make(Indexes),
+		TableConstraints:     make(TableConstraints),
 	}
 }
 
@@ -362,11 +398,49 @@ func processDDL(ddl *ast.DataDefinition) Tables {
 			tables.AddIndex(searchPath, stmt)
 		case *ast.AlterSequenceStatement:
 			tables.AddSequence(searchPath, stmt)
+		case *ast.AlterTableStatement:
+			processAlterTableStatement(searchPath, tables, stmt)
 		default:
 			log.Printf("skip statement: %v", stmt)
 		}
 	}
 	return tables
+}
+
+func processAlterTableStatement(searchPath string, tables Tables, alterTableStatement *ast.AlterTableStatement) {
+	if alterTableStatement.Name.SchemaIdentifier == nil {
+		alterTableStatement.Name.SetSchema(searchPath)
+	}
+	tableName := alterTableStatement.Name.String()
+	table := tables.FindTable(tableName)
+	if table == nil {
+		log.Printf("irregular alter table to unknown table=%s", tableName)
+		return
+	}
+	for _, action := range alterTableStatement.Actions {
+		switch v := action.(type) {
+		case *ast.TableConstraint:
+			var typ ConstraintType
+			if v.PrimaryKey {
+				typ = PrimaryKey
+			}
+			if v.Unique {
+				typ = Unique
+			}
+			var columns []string
+			for _, c := range v.ColumnList.ColumnNames {
+				columns = append(columns, c.Value)
+			}
+			table.TableConstraints[v.Name.Value] = &TableConstraint{
+				Name:    v.Name.Value,
+				Type:    typ,
+				Columns: columns,
+			}
+		default:
+			log.Printf("skipped table statement")
+			return
+		}
+	}
 }
 
 func columnFromAst(columnDefinition *ast.ColumnDefinition) *Column {

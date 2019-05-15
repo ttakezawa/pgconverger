@@ -250,6 +250,23 @@ func (df *Diff) diffTable(sourceTable, desiredTable *Table) {
 			df.addTableConstraint(sourceTable, desiredTableConstraint)
 		}
 	}
+
+	for _, sourceAlterColumnSetDefault := range sourceTable.AlterColumnSetDefaults {
+		desiredAlterColumnSetDefault, ok := desiredTable.AlterColumnSetDefaults[sourceAlterColumnSetDefault.Column]
+		if ok {
+			// TODO: MODIFY CONSTRAINT ?
+			_ = desiredAlterColumnSetDefault
+		} else {
+			df.dropAlterColumnSetDefault(sourceTable, sourceAlterColumnSetDefault)
+		}
+	}
+
+	for _, desiredAlterColumnSetDefault := range desiredTable.AlterColumnSetDefaults {
+		_, ok := sourceTable.AlterColumnSetDefaults[desiredAlterColumnSetDefault.Column]
+		if !ok {
+			df.addAlterColumnSetDefault(sourceTable, desiredAlterColumnSetDefault)
+		}
+	}
 }
 
 func (df *Diff) addColumn(table *Table, column *Column) {
@@ -372,6 +389,13 @@ func (df *Diff) dropTableConstraint(table *Table, tableConstraint *TableConstrai
 	df.WriteString(fmt.Sprintf("ALTER TABLE ONLY %s DROP CONSTRAINT \"%s\";\n",
 		table.Identifier,
 		tableConstraint.Name,
+	))
+}
+
+func (df *Diff) dropAlterColumnSetDefault(table *Table, alterColumnSetDefault *AlterColumnSetDefault) {
+	df.WriteString(fmt.Sprintf("ALTER TABLE ONLY %s ALTER COLUMN \"%s\" DROP DEFAULT;\n",
+		table.Identifier,
+		alterColumnSetDefault.Column,
 	))
 }
 

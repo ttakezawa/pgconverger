@@ -132,6 +132,10 @@ func (tables Tables) SortedKeys() (keys []string) {
 	return
 }
 
+func (df *Diff) writeTableAnnotation(table *Table) {
+	df.stringBuilder.WriteString("-- Table: " + table.Identifier + "\n")
+}
+
 func (df *Diff) generatePatch() string {
 	df.sourceTables = processDDL(df.sourceDDL)
 	df.desiredTables = processDDL(df.desiredDDL)
@@ -140,9 +144,20 @@ func (df *Diff) generatePatch() string {
 		sourceTable := df.sourceTables[identifier]
 		desiredTable := df.desiredTables.FindTable(identifier)
 		if desiredTable != nil {
+			origBuilder := df.stringBuilder
+			tmpBuilder := &strings.Builder{}
+			df.stringBuilder = tmpBuilder
 			df.diffTable(sourceTable, desiredTable)
+			df.stringBuilder = origBuilder
+			if tmpBuilder.Len() > 0 {
+				df.writeTableAnnotation(sourceTable)
+				df.stringBuilder.WriteString(tmpBuilder.String())
+				df.stringBuilder.WriteString("\n")
+			}
 		} else {
+			df.writeTableAnnotation(sourceTable)
 			df.dropTable(sourceTable)
+			df.stringBuilder.WriteString("\n")
 		}
 	}
 
@@ -152,7 +167,9 @@ func (df *Diff) generatePatch() string {
 		if sourceTable != nil {
 			// none
 		} else {
+			df.writeTableAnnotation(desiredTable)
 			df.createTable(desiredTable)
+			df.stringBuilder.WriteString("\n")
 		}
 	}
 

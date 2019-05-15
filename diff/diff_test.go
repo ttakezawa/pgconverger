@@ -21,10 +21,13 @@ func newReader(data string) fileReader {
 	return &reader{bytes.NewBufferString(data), "test"}
 }
 
-var reg = regexp.MustCompile(`\s+`)
+var (
+	spacesPattern = regexp.MustCompile(`\s+`)
+)
 
 func canonical(s string) string {
-	return reg.ReplaceAllString(strings.TrimSpace(s), " ")
+	s = spacesPattern.ReplaceAllString(strings.TrimSpace(s), " ")
+	return s
 }
 
 func TestProcess(t *testing.T) {
@@ -45,6 +48,7 @@ func TestProcess(t *testing.T) {
 				desired: newReader(`CREATE TABLE "x" ( id bigint );`),
 			},
 			want: `
+-- Table: "public"."x"
 CREATE TABLE "public"."x" (
     "id" bigint
 );`,
@@ -57,6 +61,7 @@ CREATE TABLE "public"."x" (
 				desired: newReader(`CREATE TABLE "myschema"."x" ( id bigint );`),
 			},
 			want: `
+-- Table: "myschema"."x"
 CREATE TABLE "myschema"."x" (
     "id" bigint
 );`,
@@ -71,6 +76,7 @@ SET search_path = "myschema", pg_catalog;
 CREATE TABLE "x" ( id bigint );`),
 			},
 			want: `
+-- Table: "myschema"."x"
 CREATE TABLE "myschema"."x" (
     "id" bigint
 );`,
@@ -85,6 +91,7 @@ CREATE TABLE users (id bigint);
 ALTER TABLE ONLY public.users ADD CONSTRAINT users_pkey PRIMARY KEY (id);`),
 			},
 			want: `
+-- Table: "public"."users"
 CREATE TABLE "public"."users" (
     "id" bigint
 );
@@ -100,6 +107,7 @@ CREATE TABLE users (id bigint);
 ALTER TABLE ONLY public.users ADD CONSTRAINT users_pkey UNIQUE (id);`),
 			},
 			want: `
+-- Table: "public"."users"
 CREATE TABLE "public"."users" (
     "id" bigint
 );
@@ -115,6 +123,7 @@ CREATE TABLE users (id bigint);
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);`),
 			},
 			want: `
+-- Table: "public"."users"
 CREATE TABLE "public"."users" (
     "id" bigint
 );
@@ -127,7 +136,9 @@ ALTER TABLE ONLY "public"."users" ALTER COLUMN "id" SET DEFAULT "nextval"('publi
 				source:  newReader(`CREATE TABLE "x" ( id bigint );`),
 				desired: newReader(``),
 			},
-			want:    `DROP TABLE "public"."x";`,
+			want: `
+-- Table: "public"."x"
+DROP TABLE "public"."x";`,
 			wantErr: false,
 		},
 		{
@@ -136,7 +147,9 @@ ALTER TABLE ONLY "public"."users" ALTER COLUMN "id" SET DEFAULT "nextval"('publi
 				source:  newReader(`CREATE TABLE "x" ( id bigint );`),
 				desired: newReader(`CREATE TABLE "x" ( id bigint, n text );`),
 			},
-			want:    `ALTER TABLE "public"."x" ADD COLUMN "n" text;`,
+			want: `
+-- Table: "public"."x"
+ALTER TABLE "public"."x" ADD COLUMN "n" text;`,
 			wantErr: false,
 		},
 		{
@@ -145,7 +158,9 @@ ALTER TABLE ONLY "public"."users" ALTER COLUMN "id" SET DEFAULT "nextval"('publi
 				source:  newReader(`CREATE TABLE "x" ( id bigint, n text );`),
 				desired: newReader(`CREATE TABLE "x" ( id bigint );`),
 			},
-			want:    `ALTER TABLE "public"."x" DROP COLUMN "n";`,
+			want: `
+-- Table: "public"."x"
+ALTER TABLE "public"."x" DROP COLUMN "n";`,
 			wantErr: false,
 		},
 		{
@@ -154,7 +169,9 @@ ALTER TABLE ONLY "public"."users" ALTER COLUMN "id" SET DEFAULT "nextval"('publi
 				source:  newReader(`CREATE TABLE "x" ( id bigint, n bigint );`),
 				desired: newReader(`CREATE TABLE "x" ( id bigint, n text );`),
 			},
-			want:    `ALTER TABLE "public"."x" ALTER COLUMN "n" TYPE text;`,
+			want: `
+-- Table: "public"."x"
+ALTER TABLE "public"."x" ALTER COLUMN "n" TYPE text;`,
 			wantErr: false,
 		},
 		{
@@ -163,7 +180,9 @@ ALTER TABLE ONLY "public"."users" ALTER COLUMN "id" SET DEFAULT "nextval"('publi
 				source:  newReader(`CREATE TABLE "x" ( id bigint, n bigint );`),
 				desired: newReader(`CREATE TABLE "x" ( id bigint, n bigint NOT NULL);`),
 			},
-			want:    `ALTER TABLE "public"."x" ALTER COLUMN "n" SET NOT NULL;`,
+			want: `
+-- Table: "public"."x"
+ALTER TABLE "public"."x" ALTER COLUMN "n" SET NOT NULL;`,
 			wantErr: false,
 		},
 		{
@@ -172,7 +191,9 @@ ALTER TABLE ONLY "public"."users" ALTER COLUMN "id" SET DEFAULT "nextval"('publi
 				source:  newReader(`CREATE TABLE "x" ( id bigint, n bigint NOT NULL);`),
 				desired: newReader(`CREATE TABLE "x" ( id bigint, n bigint);`),
 			},
-			want:    `ALTER TABLE "public"."x" ALTER COLUMN "n" DROP NOT NULL;`,
+			want: `
+-- Table: "public"."x"
+ALTER TABLE "public"."x" ALTER COLUMN "n" DROP NOT NULL;`,
 			wantErr: false,
 		},
 		{
@@ -181,7 +202,9 @@ ALTER TABLE ONLY "public"."users" ALTER COLUMN "id" SET DEFAULT "nextval"('publi
 				source:  newReader(`CREATE TABLE "x" ( id bigint, n bigint);`),
 				desired: newReader(`CREATE TABLE "x" ( id bigint, n bigint DEFAULT 42);`),
 			},
-			want:    `ALTER TABLE "public"."x" ALTER COLUMN "n" SET DEFAULT 42;`,
+			want: `
+-- Table: "public"."x"
+ALTER TABLE "public"."x" ALTER COLUMN "n" SET DEFAULT 42;`,
 			wantErr: false,
 		},
 		{
@@ -190,7 +213,9 @@ ALTER TABLE ONLY "public"."users" ALTER COLUMN "id" SET DEFAULT "nextval"('publi
 				source:  newReader(`CREATE TABLE "x" ( id bigint, n bigint DEFAULT 42);`),
 				desired: newReader(`CREATE TABLE "x" ( id bigint, n bigint);`),
 			},
-			want:    `ALTER TABLE "public"."x" ALTER COLUMN "n" DROP DEFAULT;`,
+			want: `
+-- Table: "public"."x"
+ALTER TABLE "public"."x" ALTER COLUMN "n" DROP DEFAULT;`,
 			wantErr: false,
 		},
 		{
@@ -200,6 +225,7 @@ ALTER TABLE ONLY "public"."users" ALTER COLUMN "id" SET DEFAULT "nextval"('publi
 				desired: newReader(`CREATE TABLE "x" ( id bigint, n bigint DEFAULT 42);`),
 			},
 			want: `
+-- Table: "public"."x"
 ALTER TABLE "public"."x" ALTER COLUMN "n" TYPE bigint;
 ALTER TABLE "public"."x" ALTER COLUMN "n" SET DEFAULT 42;`,
 			wantErr: false,
@@ -211,6 +237,7 @@ ALTER TABLE "public"."x" ALTER COLUMN "n" SET DEFAULT 42;`,
 				desired: newReader(`CREATE TABLE "x" ( id bigint, n integer not null);`),
 			},
 			want: `
+-- Table: "public"."x"
 ALTER TABLE "public"."x" ALTER COLUMN "n" SET NOT NULL;
 ALTER TABLE "public"."x" ALTER COLUMN "n" DROP DEFAULT;`,
 			wantErr: false,
@@ -224,7 +251,9 @@ CREATE TABLE users (name text);`),
 CREATE TABLE users (name text);
 CREATE INDEX idx ON users USING btree (name);`),
 			},
-			want:    `CREATE INDEX "idx" ON "public"."users" USING "btree" ("name");`,
+			want: `
+-- Table: "public"."users"
+CREATE INDEX "idx" ON "public"."users" USING "btree" ("name");`,
 			wantErr: false,
 		},
 		{
@@ -236,7 +265,9 @@ CREATE INDEX idx ON users USING btree (name);`),
 				desired: newReader(`
 CREATE TABLE users (name text);`),
 			},
-			want:    `DROP INDEX "idx";`,
+			want: `
+-- Table: "public"."users"
+DROP INDEX "idx";`,
 			wantErr: false,
 		},
 	}

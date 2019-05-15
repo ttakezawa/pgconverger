@@ -874,6 +874,8 @@ func (p *Parser) parseAlterSequenceStatement() ast.Statement {
 	return alterSequenceStatement
 }
 
+// ALTER TABLE ONLY users ADD CONSTRAINT users_name_key UNIQUE (name);
+// ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
 func (p *Parser) parseAlterTableStatement() ast.Statement {
 	alterTableStatement := &ast.AlterTableStatement{}
 
@@ -893,20 +895,48 @@ func (p *Parser) parseAlterTableStatement() ast.Statement {
 	}
 	alterTableStatement.Name = tableName
 
-	if !p.expectPeek(token.Add) {
-		// NOTE: Currently, ADD CONSTRAINT of ALTER TABLE is only supported.
-		return nil
-	}
-	if !p.expectPeek(token.Constraint) {
-		// NOTE: Currently, ADD CONSTRAINT of ALTER TABLE is only supported.
-		return nil
-	}
+	switch p.peekToken.Type {
+	case token.Add:
+		p.advance()
+		if p.peekToken.Type == token.Constraint {
+			p.advance()
+			tableConstraint := p.parseTableConstraint()
+			if tableConstraint == nil {
+				return nil
+			}
+			alterTableStatement.Actions = append(alterTableStatement.Actions, tableConstraint)
+			return alterTableStatement
+		} else {
+			p.errorf(p.peekToken.Line, "expected %s, found %s", token.Constraint, p.peekToken.Literal)
+			return nil
+		}
+	case token.Alter:
+		p.advance()
+		if p.peekToken.Type == token.Column {
+			p.advance()
+		}
+		p.advance()
 
-	tableConstraint := p.parseTableConstraint()
-	if tableConstraint == nil {
-		return nil
+		column := p.parseIdentifier()
+		if column == nil {
+			return nil
+		}
+		p.advance()
+		if p.token.Type == token.Set && p.peekToken.Type == token.Default {
+			p.advance()
+			p.advance()
+			expr := p.parseExpression(precedenceLowest)
+			if expr == nil {
+				return nil
+			}
+			alterColumnSetDefault := &ast.AlterColumnSetDefault{
+				Column: column,
+				Expr:   expr,
+			}
+			alterTableStatement.Actions = append(alterTableStatement.Actions, alterColumnSetDefault)
+			return alterTableStatement
+		}
 	}
-	alterTableStatement.Actions = append(alterTableStatement.Actions, tableConstraint)
 
 	return alterTableStatement
 }

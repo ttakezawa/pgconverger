@@ -252,6 +252,11 @@ func TestAlterTableStatement(t *testing.T) {
 			`ALTER TABLE ONLY "users"
     ADD CONSTRAINT "users_name_key" UNIQUE ("name");`,
 		},
+		{
+			`ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);`,
+			`ALTER TABLE ONLY "public"."users"
+    ALTER COLUMN "id" SET DEFAULT "nextval"('public.users_id_seq'::"regclass");`,
+		},
 	}
 
 	for i, tt := range tests {

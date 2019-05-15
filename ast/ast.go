@@ -478,6 +478,7 @@ func (alterTableStatement *AlterTableStatement) WriteStringTo(w io.StringWriter)
 		_, _ = w.WriteString("    ")
 		action.WriteStringTo(w)
 	}
+	_, _ = w.WriteString(";")
 }
 
 type TableConstraint struct {
@@ -498,5 +499,16 @@ func (tableConstraint *TableConstraint) WriteStringTo(w io.StringWriter) {
 		_, _ = w.WriteString(" UNIQUE ")
 		tableConstraint.ColumnList.WriteStringTo(w)
 	}
-	_, _ = w.WriteString(";")
+}
+
+type AlterColumnSetDefault struct {
+	Column *Identifier
+	Expr   Expression
+}
+
+func (alterColumnSetDefault *AlterColumnSetDefault) WriteStringTo(w io.StringWriter) {
+	_, _ = w.WriteString("ALTER COLUMN ")
+	alterColumnSetDefault.Column.WriteStringTo(w)
+	_, _ = w.WriteString(" SET DEFAULT ")
+	alterColumnSetDefault.Expr.WriteStringTo(w)
 }

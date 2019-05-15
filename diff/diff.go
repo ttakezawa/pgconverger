@@ -119,6 +119,7 @@ type (
 type ConstraintType string
 
 const (
+	Unknown    ConstraintType = ""
 	Unique     ConstraintType = "UNIQUE"
 	PrimaryKey ConstraintType = "PRIMARY KEY"
 )
@@ -446,6 +447,9 @@ func processAlterTableStatement(searchPath string, tables Tables, alterTableStat
 			}
 			if v.Unique {
 				typ = Unique
+			}
+			if typ == Unknown {
+				continue
 			}
 			var columns []string
 			for _, c := range v.ColumnList.ColumnNames {

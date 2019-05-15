@@ -261,12 +261,12 @@ func (df *Diff) addTableConstraint(table *Table, tableConstraint *TableConstrain
 		}
 		df.WriteString(fmt.Sprintf(`"%s"`, c))
 	}
-	df.WriteString(");")
+	df.WriteString(");\n")
 }
 
 func (df *Diff) addAlterColumnSetDefault(table *Table, alterColumnSetDefault *AlterColumnSetDefault) {
 	df.WriteString(fmt.Sprintf(
-		`ALTER TABLE ONLY %s ALTER COLUMN "%s" SET DEFAULT %s;`,
+		"ALTER TABLE ONLY %s ALTER COLUMN \"%s\" SET DEFAULT %s;\n",
 		table.Identifier,
 		alterColumnSetDefault.Column,
 		alterColumnSetDefault.Default,

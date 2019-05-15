@@ -76,17 +76,19 @@ func (df *Diff) ErrorOrNil() error {
 }
 
 type (
-	Tables           map[string]*Table
-	Indexes          map[string]*Index
-	TableConstraints map[string]*TableConstraint
+	Tables                 map[string]*Table
+	Indexes                map[string]*Index
+	TableConstraints       map[string]*TableConstraint
+	AlterColumnSetDefaults map[string]*AlterColumnSetDefault
 
 	Table struct {
 		CreateTableStatement *ast.CreateTableStatement
 		string
-		Identifier       string
-		Columns          map[string]*Column
-		Indexes          Indexes
-		TableConstraints TableConstraints
+		Identifier             string
+		Columns                map[string]*Column
+		Indexes                Indexes
+		TableConstraints       TableConstraints
+		AlterColumnSetDefaults AlterColumnSetDefaults
 	}
 
 	Column struct {
@@ -106,6 +108,11 @@ type (
 		Name    string
 		Type    ConstraintType
 		Columns []string
+	}
+
+	AlterColumnSetDefault struct {
+		Column  string
+		Default string
 	}
 )
 
@@ -164,6 +171,9 @@ func (df *Diff) createTable(table *Table) {
 	}
 	for _, constraint := range table.TableConstraints {
 		df.addTableConstraint(table, constraint)
+	}
+	for _, alterColumnSetDefault := range table.AlterColumnSetDefaults {
+		df.addAlterColumnSetDefault(table, alterColumnSetDefault)
 	}
 }
 
@@ -253,6 +263,15 @@ func (df *Diff) addTableConstraint(table *Table, tableConstraint *TableConstrain
 	df.WriteString(");")
 }
 
+func (df *Diff) addAlterColumnSetDefault(table *Table, alterColumnSetDefault *AlterColumnSetDefault) {
+	df.WriteString(fmt.Sprintf(
+		`ALTER TABLE ONLY %s ALTER COLUMN "%s" SET DEFAULT %s;`,
+		table.Identifier,
+		alterColumnSetDefault.Column,
+		alterColumnSetDefault.Default,
+	))
+}
+
 func (df *Diff) dropColumn(table *Table, column *Column) {
 	df.WriteString(fmt.Sprintf("ALTER TABLE %s DROP COLUMN \"%s\";\n",
 		table.Identifier,
@@ -335,11 +354,12 @@ func (tables Tables) AddTable(searchPath string, createTableStatement *ast.Creat
 	}
 
 	tables[identifier] = &Table{
-		CreateTableStatement: createTableStatement,
-		Identifier:           identifier,
-		Columns:              columns,
-		Indexes:              make(Indexes),
-		TableConstraints:     make(TableConstraints),
+		CreateTableStatement:   createTableStatement,
+		Identifier:             identifier,
+		Columns:                columns,
+		Indexes:                make(Indexes),
+		TableConstraints:       make(TableConstraints),
+		AlterColumnSetDefaults: make(AlterColumnSetDefaults),
 	}
 }
 
@@ -435,6 +455,13 @@ func processAlterTableStatement(searchPath string, tables Tables, alterTableStat
 				Name:    v.Name.Value,
 				Type:    typ,
 				Columns: columns,
+			}
+		case *ast.AlterColumnSetDefault:
+			var builder strings.Builder
+			v.Expr.WriteStringTo(&builder)
+			table.AlterColumnSetDefaults[v.Column.Value] = &AlterColumnSetDefault{
+				Column:  v.Column.Value,
+				Default: builder.String(),
 			}
 		default:
 			log.Printf("skipped table statement")

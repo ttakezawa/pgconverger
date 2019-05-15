@@ -107,6 +107,21 @@ ALTER TABLE ONLY "public"."users" ADD CONSTRAINT "users_pkey" UNIQUE ("id");`,
 			wantErr: false,
 		},
 		{
+			name: "create table with set default",
+			args: args{
+				source: newReader(``),
+				desired: newReader(`
+CREATE TABLE users (id bigint);
+ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);`),
+			},
+			want: `
+CREATE TABLE "public"."users" (
+    "id" bigint
+);
+ALTER TABLE ONLY "public"."users" ALTER COLUMN "id" SET DEFAULT "nextval"('public.users_id_seq'::"regclass");`,
+			wantErr: false,
+		},
+		{
 			name: "drop table",
 			args: args{
 				source:  newReader(`CREATE TABLE "x" ( id bigint );`),

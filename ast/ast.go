@@ -248,6 +248,25 @@ func (infixExpr *InfixExpression) WriteStringTo(w io.StringWriter) {
 	infixExpr.Right.WriteStringTo(w)
 }
 
+type CallExpression struct {
+	Token     token.Token // The '(' token
+	Function  Expression  // Identifier or FunctionLiteral
+	Arguments []Expression
+}
+
+func (callExpression *CallExpression) expressionNode() {}
+func (callExpression *CallExpression) WriteStringTo(w io.StringWriter) {
+	callExpression.Function.WriteStringTo(w)
+	_, _ = w.WriteString("(")
+	for i, argument := range callExpression.Arguments {
+		if i != 0 {
+			_, _ = w.WriteString(", ")
+		}
+		argument.WriteStringTo(w)
+	}
+	_, _ = w.WriteString(")")
+}
+
 type StringLiteral struct {
 	Token token.Token
 }

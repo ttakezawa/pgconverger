@@ -16,6 +16,7 @@ const (
 	precedenceProduct
 	precedenceTypecast
 	precedencePrefix // -x
+	precedenceCall
 )
 
 type (
@@ -57,6 +58,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.Asterisk, p.parseInfixExpression)
 	p.registerInfix(token.Typecast, p.parseInfixExpression)
 	p.registerInfix(token.Is, p.parseInfixExpression)
+	p.registerInfix(token.LParen, p.parseCallExpression)
 
 	p.advance()
 	p.advance()
@@ -87,6 +89,7 @@ var precedences = map[token.TokenType]int{
 	token.Slash:    precedenceProduct,
 	token.Asterisk: precedenceProduct,
 	token.Typecast: precedenceTypecast,
+	token.LParen:   precedenceCall,
 }
 
 func (p *Parser) peekPrecedence() int {
@@ -591,6 +594,39 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	expression.Right = right
 
 	return expression
+}
+
+func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
+	expr := &ast.CallExpression{
+		Token:     p.token,
+		Function:  function,
+		Arguments: p.parseCallArguments(),
+	}
+	return expr
+}
+
+func (p *Parser) parseCallArguments() []ast.Expression {
+	var args []ast.Expression
+
+	if p.peekToken.Type == token.RParen {
+		p.advance()
+		return args
+	}
+
+	p.advance()
+	args = append(args, p.parseExpression(precedenceLowest))
+
+	for p.peekToken.Type == token.Comma {
+		p.advance()
+		p.advance()
+		args = append(args, p.parseExpression(precedenceLowest))
+	}
+
+	if !p.expectPeek(token.RParen) {
+		return nil
+	}
+
+	return args
 }
 
 func (p *Parser) parseStringLiteral() ast.Expression {

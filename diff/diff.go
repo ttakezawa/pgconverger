@@ -257,7 +257,8 @@ func (df *Diff) diffTable(sourceTable, desiredTable *Table) {
 			// TODO: MODIFY CONSTRAINT ?
 			_ = desiredAlterColumnSetDefault
 		} else {
-			df.dropAlterColumnSetDefault(sourceTable, sourceAlterColumnSetDefault)
+			// a little malfunctioned.
+			// df.dropAlterColumnSetDefault(sourceTable, sourceAlterColumnSetDefault)
 		}
 	}
 

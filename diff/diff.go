@@ -233,6 +233,23 @@ func (df *Diff) diffTable(sourceTable, desiredTable *Table) {
 			df.createIndex(sourceTable, desiredIndex)
 		}
 	}
+
+	for _, sourceTableConstraint := range sourceTable.TableConstraints {
+		desiredTableConstraint, ok := desiredTable.TableConstraints[sourceTableConstraint.Name]
+		if ok {
+			// TODO: MODIFY CONSTRAINT ?
+			_ = desiredTableConstraint
+		} else {
+			df.dropTableConstraint(sourceTable, sourceTableConstraint)
+		}
+	}
+
+	for _, desiredTableConstraint := range desiredTable.TableConstraints {
+		_, ok := sourceTable.TableConstraints[desiredTableConstraint.Name]
+		if !ok {
+			df.addTableConstraint(sourceTable, desiredTableConstraint)
+		}
+	}
 }
 
 func (df *Diff) addColumn(table *Table, column *Column) {
@@ -348,6 +365,13 @@ func (df *Diff) createIndex(_ *Table, index *Index) {
 func (df *Diff) dropIndex(table *Table, index *Index) {
 	df.WriteString(fmt.Sprintf("DROP INDEX \"%s\";\n",
 		index.Name,
+	))
+}
+
+func (df *Diff) dropTableConstraint(table *Table, tableConstraint *TableConstraint) {
+	df.WriteString(fmt.Sprintf("ALTER TABLE ONLY %s DROP CONSTRAINT \"%s\";\n",
+		table.Identifier,
+		tableConstraint.Name,
 	))
 }
 

@@ -270,6 +270,34 @@ CREATE TABLE users (name text);`),
 DROP INDEX "idx";`,
 			wantErr: false,
 		},
+		{
+			name: "add constraint unique",
+			args: args{
+				source: newReader(`
+CREATE TABLE users (id bigint);`),
+				desired: newReader(`
+CREATE TABLE users (id bigint);
+ALTER TABLE users ADD CONSTRAINT users_pkey UNIQUE (id);`),
+			},
+			want: `
+-- Table: "public"."users"
+ALTER TABLE ONLY "public"."users" ADD CONSTRAINT "users_pkey" UNIQUE ("id");`,
+			wantErr: false,
+		},
+		{
+			name: "drop constraint unique",
+			args: args{
+				source: newReader(`
+CREATE TABLE users (id bigint);
+ALTER TABLE users ADD CONSTRAINT users_pkey UNIQUE (id);`),
+				desired: newReader(`
+CREATE TABLE users (id bigint);`),
+			},
+			want: `
+-- Table: "public"."users"
+ALTER TABLE ONLY "public"."users" DROP CONSTRAINT "users_pkey";`,
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

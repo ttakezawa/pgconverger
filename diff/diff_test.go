@@ -153,6 +153,17 @@ ALTER TABLE "public"."x" ADD COLUMN "n" text;`,
 			wantErr: false,
 		},
 		{
+			name: "add column with not null set default",
+			args: args{
+				source:  newReader(`CREATE TABLE "users" ( id bigint );`),
+				desired: newReader(`CREATE TABLE "users" ( id bigint, n bigint DEFAULT 1 NOT NULL);`),
+			},
+			want: `
+-- Table: "public"."users"
+ALTER TABLE "public"."users" ADD COLUMN "n" bigint DEFAULT 1 NOT NULL;`,
+			wantErr: false,
+		},
+		{
 			name: "drop column",
 			args: args{
 				source:  newReader(`CREATE TABLE "x" ( id bigint, n text );`),

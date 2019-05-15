@@ -271,11 +271,18 @@ func (df *Diff) diffTable(sourceTable, desiredTable *Table) {
 }
 
 func (df *Diff) addColumn(table *Table, column *Column) {
-	df.WriteString(fmt.Sprintf("ALTER TABLE %s ADD COLUMN \"%s\" %s;\n",
+	df.WriteString(fmt.Sprintf("ALTER TABLE %s ADD COLUMN \"%s\" %s",
 		table.Identifier,
 		column.Name,
 		column.DataType,
 	))
+	if column.Default != "" {
+		df.WriteString(" DEFAULT " + column.Default)
+	}
+	if column.NotNull {
+		df.WriteString(" NOT NULL")
+	}
+	df.WriteString(";\n")
 }
 
 func (df *Diff) addSequence(table *Table, column *Column) {

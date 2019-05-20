@@ -186,6 +186,17 @@ ALTER TABLE "public"."x" ALTER COLUMN "n" TYPE text;`,
 			wantErr: false,
 		},
 		{
+			name: "alter column from varchar to bytea",
+			args: args{
+				source:  newReader(`CREATE TABLE "x" ( id bigint, n character varying(40) );`),
+				desired: newReader(`CREATE TABLE "x" ( id bigint, n bytea );`),
+			},
+			want: `
+-- Table: "public"."x"
+ALTER TABLE "public"."x" ALTER COLUMN "n" TYPE bytea USING n::bytea;`,
+			wantErr: false,
+		},
+		{
 			name: "alter column set not null",
 			args: args{
 				source:  newReader(`CREATE TABLE "x" ( id bigint, n bigint );`),

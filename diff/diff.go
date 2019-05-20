@@ -340,7 +340,14 @@ func (df *Diff) dropColumn(table *Table, column *Column) {
 }
 
 func (df *Diff) alterColumn(table *Table, sourceColumn *Column, desiredColumn *Column) {
-	if sourceColumn.DataType != desiredColumn.DataType {
+	if strings.HasPrefix(sourceColumn.DataType, "character") && desiredColumn.DataType == "bytea" {
+		df.WriteString(fmt.Sprintf("ALTER TABLE %s ALTER COLUMN \"%s\" TYPE %s USING %s::bytea;\n",
+			table.Identifier,
+			desiredColumn.Name,
+			desiredColumn.DataType,
+			desiredColumn.Name,
+		))
+	} else if sourceColumn.DataType != desiredColumn.DataType {
 		df.WriteString(fmt.Sprintf("ALTER TABLE %s ALTER COLUMN \"%s\" TYPE %s;\n",
 			table.Identifier,
 			desiredColumn.Name,

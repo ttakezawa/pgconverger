@@ -80,26 +80,27 @@ func _() {
 	_ = x[Varying-69]
 	_ = x[View-70]
 	_ = x[With-71]
-	_ = x[Zone-72]
-	_ = x[Bigint-73]
-	_ = x[Bigserial-74]
-	_ = x[Boolean-75]
-	_ = x[Bytea-76]
-	_ = x[Character-77]
-	_ = x[Date-78]
-	_ = x[Integer-79]
-	_ = x[Jsonb-80]
-	_ = x[Numeric-81]
-	_ = x[Serial-82]
-	_ = x[Text-83]
-	_ = x[Timestamp-84]
-	_ = x[Time-85]
-	_ = x[Tsvector-86]
+	_ = x[Without-72]
+	_ = x[Zone-73]
+	_ = x[Bigint-74]
+	_ = x[Bigserial-75]
+	_ = x[Boolean-76]
+	_ = x[Bytea-77]
+	_ = x[Character-78]
+	_ = x[Date-79]
+	_ = x[Integer-80]
+	_ = x[Jsonb-81]
+	_ = x[Numeric-82]
+	_ = x[Serial-83]
+	_ = x[Text-84]
+	_ = x[Timestamp-85]
+	_ = x[Time-86]
+	_ = x[Tsvector-87]
 }
 
-const _TokenType_name = "IllegalEOFSpaceCommentCommentBlockCommentLineIdentifierStringNumberDotSemicolonCommaLParenRParenEqualPlusMinusAsteriskSlashTypecastAddAlterAscBackslashConnectByCacheColumnConcurrentlyConstraintCreateDatabaseDefaultDescExistsExtensionFalseFunctionGrantIfIncrementIndexInsertIsKeyMaxvalueMinvalueNoNotNullOnOnlyOperatorOwnedOwnerPrimaryRevokeRoleSchemaSelectSequenceSetStartTableToTriggerTrueUniqueUpdateUsingVaryingViewWithZoneBigintBigserialBooleanByteaCharacterDateIntegerJsonbNumericSerialTextTimestampTimeTsvector"
+const _TokenType_name = "IllegalEOFSpaceCommentCommentBlockCommentLineIdentifierStringNumberDotSemicolonCommaLParenRParenEqualPlusMinusAsteriskSlashTypecastAddAlterAscBackslashConnectByCacheColumnConcurrentlyConstraintCreateDatabaseDefaultDescExistsExtensionFalseFunctionGrantIfIncrementIndexInsertIsKeyMaxvalueMinvalueNoNotNullOnOnlyOperatorOwnedOwnerPrimaryRevokeRoleSchemaSelectSequenceSetStartTableToTriggerTrueUniqueUpdateUsingVaryingViewWithWithoutZoneBigintBigserialBooleanByteaCharacterDateIntegerJsonbNumericSerialTextTimestampTimeTsvector"
 
-var _TokenType_index = [...]uint16{0, 7, 10, 15, 22, 34, 45, 55, 61, 67, 70, 79, 84, 90, 96, 101, 105, 110, 118, 123, 131, 134, 139, 142, 158, 160, 165, 171, 183, 193, 199, 207, 214, 218, 224, 233, 238, 246, 251, 253, 262, 267, 273, 275, 278, 286, 294, 296, 299, 303, 305, 309, 317, 322, 327, 334, 340, 344, 350, 356, 364, 367, 372, 377, 379, 386, 390, 396, 402, 407, 414, 418, 422, 426, 432, 441, 448, 453, 462, 466, 473, 478, 485, 491, 495, 504, 508, 516}
+var _TokenType_index = [...]uint16{0, 7, 10, 15, 22, 34, 45, 55, 61, 67, 70, 79, 84, 90, 96, 101, 105, 110, 118, 123, 131, 134, 139, 142, 158, 160, 165, 171, 183, 193, 199, 207, 214, 218, 224, 233, 238, 246, 251, 253, 262, 267, 273, 275, 278, 286, 294, 296, 299, 303, 305, 309, 317, 322, 327, 334, 340, 344, 350, 356, 364, 367, 372, 377, 379, 386, 390, 396, 402, 407, 414, 418, 422, 429, 433, 439, 448, 455, 460, 469, 473, 480, 485, 492, 498, 502, 511, 515, 523}
 
 func (i TokenType) String() string {
 	if i < 0 || i >= TokenType(len(_TokenType_index)-1) {

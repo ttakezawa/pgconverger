@@ -81,6 +81,7 @@ const (
 	Varying
 	View
 	With
+	Without
 	Zone
 
 	Bigint
@@ -173,6 +174,7 @@ var keywords = map[string]keyword{
 	"VARYING":      {Varying, false},
 	"VIEW":         {View, false},
 	"WITH":         {With, true},
+	"WITHOUT":      {Without, true},
 	"ZONE":         {Zone, false},
 }
 

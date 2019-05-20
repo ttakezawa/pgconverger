@@ -463,13 +463,20 @@ func (p *Parser) parseDataType() ast.DataType {
 		return &ast.DataTypeDate{}
 	case token.Timestamp:
 		var dataTypeTimestamp ast.DataTypeTimestamp
-		// timestamp with time zone
-		if p.peekToken.Type == token.With {
+		switch p.peekToken.Type {
+		case token.With:
+			// timestamp with time zone
 			p.advance()
 			if ok := p.expectPeek(token.Time) && p.expectPeek(token.Zone); !ok {
 				return nil
 			}
 			dataTypeTimestamp.WithTimeZone = true
+		case token.Without:
+			p.advance()
+			if ok := p.expectPeek(token.Time) && p.expectPeek(token.Zone); !ok {
+				return nil
+			}
+			dataTypeTimestamp.WithTimeZone = false
 		}
 		return &dataTypeTimestamp
 	case token.Text:

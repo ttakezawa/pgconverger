@@ -100,6 +100,8 @@ func (dataTypeTimestamp *DataTypeTimestamp) WriteStringTo(w io.StringWriter) {
 	_, _ = w.WriteString("timestamp")
 	if dataTypeTimestamp.WithTimeZone {
 		_, _ = w.WriteString(" with time zone")
+	} else {
+		_, _ = w.WriteString(" without time zone")
 	}
 }
 

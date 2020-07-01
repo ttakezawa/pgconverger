@@ -434,18 +434,22 @@ func (p *Parser) parseColumnDefinition() *ast.ColumnDefinition {
 	return &def
 }
 
+func (p *Parser) parseArray(elementType ast.DataType) ast.DataType {
+	p.advance()
+	if ok := p.expectPeek(token.RBracket); !ok {
+		return nil
+	}
+	return &ast.DataTypeArray{ElementType: elementType}
+}
+
 func (p *Parser) parseDataType() ast.DataType {
 	switch p.token.Type {
 	case token.Integer:
-		switch p.peekToken.Type {
-		case token.LBracket:
-			p.advance()
-			if ok := p.expectPeek(token.RBracket); !ok {
-				return nil
-			}
-			return &ast.DataTypeArray{ElementType: &ast.DataTypeInteger{Token: p.token}}
-		default:
-			return &ast.DataTypeInteger{Token: p.token}
+		dataType := &ast.DataTypeInteger{Token: p.token}
+		if p.peekToken.Type == token.LBracket {
+			return p.parseArray(dataType)
+		} else {
+			return dataType
 		}
 	case token.Bigint:
 		return &ast.DataTypeBigint{p.token}
@@ -491,15 +495,11 @@ func (p *Parser) parseDataType() ast.DataType {
 		}
 		return &dataTypeTimestamp
 	case token.Text:
-		switch p.peekToken.Type {
-		case token.LBracket:
-			p.advance()
-			if ok := p.expectPeek(token.RBracket); !ok {
-				return nil
-			}
-			return &ast.DataTypeArray{ElementType: &ast.DataTypeText{}}
-		default:
-			return &ast.DataTypeText{}
+		dataType := &ast.DataTypeText{}
+		if p.peekToken.Type == token.LBracket {
+			return p.parseArray(dataType)
+		} else {
+			return dataType
 		}
 	case token.Jsonb:
 		return &ast.DataTypeJsonb{}

@@ -489,6 +489,8 @@ func (p *Parser) parseDataType() ast.DataType {
 		return &ast.DataTypeBytea{}
 	case token.Tsvector:
 		return &ast.DataTypeTsvector{}
+	case token.Uuid:
+		return &ast.DataTypeUuid{}
 	default:
 		switch p.token.Literal {
 		case `"date"`:

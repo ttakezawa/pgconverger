@@ -97,11 +97,12 @@ func _() {
 	_ = x[Timestamp-86]
 	_ = x[Time-87]
 	_ = x[Tsvector-88]
+	_ = x[Uuid-89]
 }
 
-const _TokenType_name = "IllegalEOFSpaceCommentCommentBlockCommentLineIdentifierStringNumberDotSemicolonCommaLParenRParenEqualPlusMinusAsteriskSlashTypecastAddAlterAscBackslashConnectByCacheColumnConcurrentlyConstraintCreateDatabaseDefaultDescExistsExtensionFalseFunctionGrantIfIncrementIndexInsertIsKeyMaxvalueMinvalueNoNotNullOnOnlyOperatorOwnedOwnerPrimaryRevokeRoleSchemaSelectSequenceSetStartTableToTriggerTrueUniqueUpdateUsingVaryingViewWithWithoutZoneBigintSmallintBigserialBooleanByteaCharacterDateIntegerJsonbNumericSerialTextTimestampTimeTsvector"
+const _TokenType_name = "IllegalEOFSpaceCommentCommentBlockCommentLineIdentifierStringNumberDotSemicolonCommaLParenRParenEqualPlusMinusAsteriskSlashTypecastAddAlterAscBackslashConnectByCacheColumnConcurrentlyConstraintCreateDatabaseDefaultDescExistsExtensionFalseFunctionGrantIfIncrementIndexInsertIsKeyMaxvalueMinvalueNoNotNullOnOnlyOperatorOwnedOwnerPrimaryRevokeRoleSchemaSelectSequenceSetStartTableToTriggerTrueUniqueUpdateUsingVaryingViewWithWithoutZoneBigintSmallintBigserialBooleanByteaCharacterDateIntegerJsonbNumericSerialTextTimestampTimeTsvectorUuid"
 
-var _TokenType_index = [...]uint16{0, 7, 10, 15, 22, 34, 45, 55, 61, 67, 70, 79, 84, 90, 96, 101, 105, 110, 118, 123, 131, 134, 139, 142, 158, 160, 165, 171, 183, 193, 199, 207, 214, 218, 224, 233, 238, 246, 251, 253, 262, 267, 273, 275, 278, 286, 294, 296, 299, 303, 305, 309, 317, 322, 327, 334, 340, 344, 350, 356, 364, 367, 372, 377, 379, 386, 390, 396, 402, 407, 414, 418, 422, 429, 433, 439, 447, 456, 463, 468, 477, 481, 488, 493, 500, 506, 510, 519, 523, 531}
+var _TokenType_index = [...]uint16{0, 7, 10, 15, 22, 34, 45, 55, 61, 67, 70, 79, 84, 90, 96, 101, 105, 110, 118, 123, 131, 134, 139, 142, 158, 160, 165, 171, 183, 193, 199, 207, 214, 218, 224, 233, 238, 246, 251, 253, 262, 267, 273, 275, 278, 286, 294, 296, 299, 303, 305, 309, 317, 322, 327, 334, 340, 344, 350, 356, 364, 367, 372, 377, 379, 386, 390, 396, 402, 407, 414, 418, 422, 429, 433, 439, 447, 456, 463, 468, 477, 481, 488, 493, 500, 506, 510, 519, 523, 531, 535}
 
 func (i TokenType) String() string {
 	if i < 0 || i >= TokenType(len(_TokenType_index)-1) {

@@ -78,6 +78,11 @@ type DataTypeText struct{}
 func (*DataTypeText) Name() DataTypeName              { return Text }
 func (*DataTypeText) WriteStringTo(w io.StringWriter) { _, _ = w.WriteString("text") }
 
+type DataTypeUuid struct{}
+
+func (*DataTypeUuid) Name() DataTypeName              { return Uuid }
+func (*DataTypeUuid) WriteStringTo(w io.StringWriter) { _, _ = w.WriteString("Uuid") }
+
 type DataTypeJsonb struct{}
 
 func (*DataTypeJsonb) Name() DataTypeName              { return Jsonb }
@@ -154,6 +159,6 @@ const (
 	// Not implemented: Tsquery
 	Tsvector
 	// Not implemented: TxidSnapshot
-	// Not implemented: UUID
+	Uuid
 	// Not implemented: Xml
 )

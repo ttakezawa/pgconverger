@@ -99,6 +99,7 @@ const (
 	Timestamp
 	Time
 	Tsvector
+	Uuid
 )
 
 type keyword struct {
@@ -173,6 +174,7 @@ var keywords = map[string]keyword{
 	"UNIQUE":       {Unique, true},
 	"UPDATE":       {Update, false},
 	"USING":        {Using, true},
+	"UUID":         {Uuid, false},
 	"VARYING":      {Varying, false},
 	"VIEW":         {View, false},
 	"WITH":         {With, true},

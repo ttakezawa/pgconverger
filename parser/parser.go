@@ -437,7 +437,16 @@ func (p *Parser) parseColumnDefinition() *ast.ColumnDefinition {
 func (p *Parser) parseDataType() ast.DataType {
 	switch p.token.Type {
 	case token.Integer:
-		return &ast.DataTypeInteger{p.token}
+		switch p.peekToken.Type {
+		case token.LBracket:
+			p.advance()
+			if ok := p.expectPeek(token.RBracket); !ok {
+				return nil
+			}
+			return &ast.DataTypeArray{ElementType: &ast.DataTypeInteger{Token: p.token}}
+		default:
+			return &ast.DataTypeInteger{Token: p.token}
+		}
 	case token.Bigint:
 		return &ast.DataTypeBigint{p.token}
 	case token.Smallint:

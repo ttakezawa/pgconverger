@@ -34,7 +34,7 @@ func TestCreateTableStatement(t *testing.T) {
     data2 "jsonb",
     "digit" integer,
     "bytes" bytea,
-    u uuid,
+    u Uuid,
     is_read boolean,
     "numer" numeric,
     "date" date,

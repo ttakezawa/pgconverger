@@ -160,7 +160,7 @@ ALTER TABLE "public"."x" ADD COLUMN "n" text;`,
 			},
 			want: `
 -- Table: "public"."x"
-ALTER TABLE "public"."x" ADD COLUMN "n" Smallint`,
+ALTER TABLE "public"."x" ADD COLUMN "n" smallint;`,
 			wantErr: false,
 		},
 		{

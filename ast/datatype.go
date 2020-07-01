@@ -30,7 +30,7 @@ type DataTypeSmallint struct {
 }
 
 func (*DataTypeSmallint) Name() DataTypeName              { return Smallint }
-func (*DataTypeSmallint) WriteStringTo(w io.StringWriter) { _, _ = w.WriteString("Smallint") }
+func (*DataTypeSmallint) WriteStringTo(w io.StringWriter) { _, _ = w.WriteString("smallint") }
 
 type DataTypeBigserial struct{}
 
@@ -81,7 +81,7 @@ func (*DataTypeText) WriteStringTo(w io.StringWriter) { _, _ = w.WriteString("te
 type DataTypeUuid struct{}
 
 func (*DataTypeUuid) Name() DataTypeName              { return Uuid }
-func (*DataTypeUuid) WriteStringTo(w io.StringWriter) { _, _ = w.WriteString("Uuid") }
+func (*DataTypeUuid) WriteStringTo(w io.StringWriter) { _, _ = w.WriteString("uuid") }
 
 type DataTypeJsonb struct{}
 

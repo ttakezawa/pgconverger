@@ -503,6 +503,8 @@ func (p *Parser) parseDataType() ast.DataType {
 			return &ast.DataTypeBytea{}
 		case `"tsvector"`:
 			return &ast.DataTypeTsvector{}
+		case `"uuid"`:
+			return &ast.DataTypeUuid{}
 		}
 
 		p.errorf(p.token.Line, "expected DataType, found %s", p.token.Literal)

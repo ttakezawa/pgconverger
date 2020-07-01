@@ -830,7 +830,7 @@ func (p *Parser) parseIndexTargets() []*ast.IndexTarget {
 
 			// parse operator class
 			switch p.peekToken.Type {
-			case token.TextPatternOps:
+			case token.TextPatternOps, token.VarcharPatternOps:
 				peekToken := p.peekToken
 				indexTarget.OperatorClass = &peekToken
 				p.advance()

@@ -140,6 +140,10 @@ func TestCreateIndexStatement(t *testing.T) {
 			`CREATE INDEX users_name_key ON users USING btree (name text_pattern_ops);`,
 			`CREATE INDEX "users_name_key" ON "users" USING "btree" ("name" text_pattern_ops);`,
 		},
+		{
+			`CREATE INDEX users_name_key ON users USING btree (name varchar_pattern_ops);`,
+			`CREATE INDEX "users_name_key" ON "users" USING "btree" ("name" varchar_pattern_ops);`,
+		},
 	}
 
 	for i, tt := range tests {

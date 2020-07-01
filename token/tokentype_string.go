@@ -81,31 +81,32 @@ func _() {
 	_ = x[Update-70]
 	_ = x[Using-71]
 	_ = x[Varying-72]
-	_ = x[View-73]
-	_ = x[With-74]
-	_ = x[Without-75]
-	_ = x[Zone-76]
-	_ = x[Bigint-77]
-	_ = x[Smallint-78]
-	_ = x[Bigserial-79]
-	_ = x[Boolean-80]
-	_ = x[Bytea-81]
-	_ = x[Character-82]
-	_ = x[Date-83]
-	_ = x[Integer-84]
-	_ = x[Jsonb-85]
-	_ = x[Numeric-86]
-	_ = x[Serial-87]
-	_ = x[Text-88]
-	_ = x[Timestamp-89]
-	_ = x[Time-90]
-	_ = x[Tsvector-91]
-	_ = x[Uuid-92]
+	_ = x[VarcharPatternOps-73]
+	_ = x[View-74]
+	_ = x[With-75]
+	_ = x[Without-76]
+	_ = x[Zone-77]
+	_ = x[Bigint-78]
+	_ = x[Smallint-79]
+	_ = x[Bigserial-80]
+	_ = x[Boolean-81]
+	_ = x[Bytea-82]
+	_ = x[Character-83]
+	_ = x[Date-84]
+	_ = x[Integer-85]
+	_ = x[Jsonb-86]
+	_ = x[Numeric-87]
+	_ = x[Serial-88]
+	_ = x[Text-89]
+	_ = x[Timestamp-90]
+	_ = x[Time-91]
+	_ = x[Tsvector-92]
+	_ = x[Uuid-93]
 }
 
-const _TokenType_name = "IllegalEOFSpaceCommentCommentBlockCommentLineIdentifierStringNumberDotSemicolonCommaLParenRParenLBracketRBracketEqualPlusMinusAsteriskSlashTypecastAddAlterAscBackslashConnectByCacheColumnConcurrentlyConstraintCreateDatabaseDefaultDescExistsExtensionFalseFunctionGrantIfIncrementIndexInsertIsKeyMaxvalueMinvalueNoNotNullOnOnlyOperatorOwnedOwnerPrimaryRevokeRoleSchemaSelectSequenceSetStartTableTextPatternOpsToTriggerTrueUniqueUpdateUsingVaryingViewWithWithoutZoneBigintSmallintBigserialBooleanByteaCharacterDateIntegerJsonbNumericSerialTextTimestampTimeTsvectorUuid"
+const _TokenType_name = "IllegalEOFSpaceCommentCommentBlockCommentLineIdentifierStringNumberDotSemicolonCommaLParenRParenLBracketRBracketEqualPlusMinusAsteriskSlashTypecastAddAlterAscBackslashConnectByCacheColumnConcurrentlyConstraintCreateDatabaseDefaultDescExistsExtensionFalseFunctionGrantIfIncrementIndexInsertIsKeyMaxvalueMinvalueNoNotNullOnOnlyOperatorOwnedOwnerPrimaryRevokeRoleSchemaSelectSequenceSetStartTableTextPatternOpsToTriggerTrueUniqueUpdateUsingVaryingVarcharPatternOpsViewWithWithoutZoneBigintSmallintBigserialBooleanByteaCharacterDateIntegerJsonbNumericSerialTextTimestampTimeTsvectorUuid"
 
-var _TokenType_index = [...]uint16{0, 7, 10, 15, 22, 34, 45, 55, 61, 67, 70, 79, 84, 90, 96, 104, 112, 117, 121, 126, 134, 139, 147, 150, 155, 158, 174, 176, 181, 187, 199, 209, 215, 223, 230, 234, 240, 249, 254, 262, 267, 269, 278, 283, 289, 291, 294, 302, 310, 312, 315, 319, 321, 325, 333, 338, 343, 350, 356, 360, 366, 372, 380, 383, 388, 393, 407, 409, 416, 420, 426, 432, 437, 444, 448, 452, 459, 463, 469, 477, 486, 493, 498, 507, 511, 518, 523, 530, 536, 540, 549, 553, 561, 565}
+var _TokenType_index = [...]uint16{0, 7, 10, 15, 22, 34, 45, 55, 61, 67, 70, 79, 84, 90, 96, 104, 112, 117, 121, 126, 134, 139, 147, 150, 155, 158, 174, 176, 181, 187, 199, 209, 215, 223, 230, 234, 240, 249, 254, 262, 267, 269, 278, 283, 289, 291, 294, 302, 310, 312, 315, 319, 321, 325, 333, 338, 343, 350, 356, 360, 366, 372, 380, 383, 388, 393, 407, 409, 416, 420, 426, 432, 437, 444, 461, 465, 469, 476, 480, 486, 494, 503, 510, 515, 524, 528, 535, 540, 547, 553, 557, 566, 570, 578, 582}
 
 func (i TokenType) String() string {
 	if i < 0 || i >= TokenType(len(_TokenType_index)-1) {

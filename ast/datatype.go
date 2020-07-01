@@ -117,6 +117,16 @@ func (dataTypeTimestamp *DataTypeTimestamp) WriteStringTo(w io.StringWriter) {
 	}
 }
 
+type DataTypeArray struct {
+	ElementType DataType
+}
+
+func (dataTypeArray *DataTypeArray) Name() DataTypeName { return Array }
+func (dataTypeArray *DataTypeArray) WriteStringTo(w io.StringWriter) {
+	dataTypeArray.ElementType.WriteStringTo(w)
+	_, _ = w.WriteString("[]")
+}
+
 // //go:generate stringer -type=DataTypeName
 type DataTypeName int
 
@@ -161,4 +171,5 @@ const (
 	// Not implemented: TxidSnapshot
 	Uuid
 	// Not implemented: Xml
+	Array
 )

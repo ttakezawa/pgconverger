@@ -482,7 +482,16 @@ func (p *Parser) parseDataType() ast.DataType {
 		}
 		return &dataTypeTimestamp
 	case token.Text:
-		return &ast.DataTypeText{}
+		switch p.peekToken.Type {
+		case token.LBracket:
+			p.advance()
+			if ok := p.expectPeek(token.RBracket); !ok {
+				return nil
+			}
+			return &ast.DataTypeArray{ElementType: &ast.DataTypeText{}}
+		default:
+			return &ast.DataTypeText{}
+		}
 	case token.Jsonb:
 		return &ast.DataTypeJsonb{}
 	case token.Bytea:

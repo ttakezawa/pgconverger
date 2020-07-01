@@ -153,6 +153,17 @@ ALTER TABLE "public"."x" ADD COLUMN "n" text;`,
 			wantErr: false,
 		},
 		{
+			name: "add smallint column",
+			args: args{
+				source:  newReader(`CREATE TABLE "x" ( id bigint );`),
+				desired: newReader(`CREATE TABLE "x" ( id bigint, n smallint );`),
+			},
+			want: `
+-- Table: "public"."x"
+ALTER TABLE "public"."x" ADD COLUMN "n" Smallint`,
+			wantErr: false,
+		},
+		{
 			name: "add column with not null set default",
 			args: args{
 				source:  newReader(`CREATE TABLE "users" ( id bigint );`),

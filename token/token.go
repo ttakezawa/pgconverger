@@ -85,6 +85,7 @@ const (
 	Zone
 
 	Bigint
+	Smallint
 	Bigserial
 	Boolean
 	Bytea
@@ -159,6 +160,7 @@ var keywords = map[string]keyword{
 	"SEQUENCE":     {Sequence, false},
 	"SERIAL":       {Serial, false},
 	"SET":          {Set, false},
+	"SMALLINT":     {Smallint, false},
 	"START":        {Start, false},
 	"TABLE":        {Table, true},
 	"TEXT":         {Text, false},

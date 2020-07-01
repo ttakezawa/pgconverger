@@ -440,6 +440,8 @@ func (p *Parser) parseDataType() ast.DataType {
 		return &ast.DataTypeInteger{p.token}
 	case token.Bigint:
 		return &ast.DataTypeBigint{p.token}
+	case token.Smallint:
+		return &ast.DataTypeSmallint{p.token}
 	case token.Boolean:
 		return &ast.DataTypeBoolean{}
 	case token.Numeric:

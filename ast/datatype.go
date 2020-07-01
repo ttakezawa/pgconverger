@@ -25,6 +25,13 @@ type DataTypeBigint struct {
 func (*DataTypeBigint) Name() DataTypeName              { return Bigint }
 func (*DataTypeBigint) WriteStringTo(w io.StringWriter) { _, _ = w.WriteString("bigint") }
 
+type DataTypeSmallint struct {
+	Token token.Token
+}
+
+func (*DataTypeSmallint) Name() DataTypeName              { return Smallint }
+func (*DataTypeSmallint) WriteStringTo(w io.StringWriter) { _, _ = w.WriteString("Smallint") }
+
 type DataTypeBigserial struct{}
 
 func (*DataTypeBigserial) Name() DataTypeName              { return Bigserial }
@@ -132,12 +139,12 @@ const (
 	// Not implemented: Macaddr8
 	// Not implemented: Money
 	Numeric
+	Smallint
 	// Not implemented: Path
 	// Not implemented: PgLsn
 	// Not implemented: Point
 	// Not implemented: Polygon
 	// Not implemented: Real
-	// Not implemented: Smallint
 	// Not implemented: Smallserial
 	Serial
 	Text

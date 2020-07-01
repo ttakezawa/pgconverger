@@ -22,6 +22,8 @@ const (
 	Comma
 	LParen
 	RParen
+	LBracket
+	RBracket
 	Equal
 	Plus
 	Minus

@@ -67,6 +67,7 @@ x f1 abc$2 "foobar"
 'aaaa''bbbb' 'a\'b' 'ab
 cd'
 1.5 .82
+text[]
 -- aaaa
 /* xxx /* aaaa */
 yyy */
@@ -82,7 +83,10 @@ yyy */
 				{token.String, "'ab\ncd'", 3},
 				{token.Number, "1.5", 5},
 				{token.Number, ".82", 5},
-				{token.EOF, "", 9},
+				{token.Text, "text", 6},
+				{token.LBracket, "[", 6},
+				{token.RBracket, "]", 6},
+				{token.EOF, "", 10},
 			},
 		},
 		{

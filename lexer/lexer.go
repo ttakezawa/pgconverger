@@ -154,6 +154,12 @@ func lexFn(l *Lexer) stateFn {
 	case l.char == ')':
 		l.advance()
 		l.emit(token.RParen)
+	case l.char == '[':
+		l.advance()
+		l.emit(token.LBracket)
+	case l.char == ']':
+		l.advance()
+		l.emit(token.RBracket)
 	case l.char == eof:
 		return lexEOF
 	default:

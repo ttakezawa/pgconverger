@@ -464,6 +464,9 @@ func (p *Parser) parseDataType() ast.DataType {
 		if p.peekToken.Type == token.Varying {
 			p.advance()
 			dataTypeCharacter.Varying = true
+			if p.peekToken.Type == token.LBracket {
+				return p.parseArray(&dataTypeCharacter)
+			}
 		}
 		if p.peekToken.Type == token.LParen {
 			p.advance()

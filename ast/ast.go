@@ -205,12 +205,16 @@ func (columnConstraintDefault *ColumnConstraintDefault) WriteStringTo(w io.Strin
 }
 
 type IndexTarget struct {
-	Node   Node
-	IsDesc bool
+	Node          Node
+	OperatorClass *token.Token
+	IsDesc        bool
 }
 
 func (indexTarget *IndexTarget) WriteStringTo(w io.StringWriter) {
 	indexTarget.Node.WriteStringTo(w)
+	if indexTarget.OperatorClass != nil {
+		_, _ = w.WriteString(" " + indexTarget.OperatorClass.Literal)
+	}
 	if indexTarget.IsDesc {
 		_, _ = w.WriteString(" DESC")
 	}

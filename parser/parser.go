@@ -827,6 +827,16 @@ func (p *Parser) parseIndexTargets() []*ast.IndexTarget {
 			indexTarget := &ast.IndexTarget{
 				Node: identifier,
 			}
+
+			// parse operator class
+			switch p.peekToken.Type {
+			case token.TextPatternOps:
+				peekToken := p.peekToken
+				indexTarget.OperatorClass = &peekToken
+				p.advance()
+			}
+
+			// parse sort option
 			switch p.peekToken.Type {
 			case token.Asc:
 				p.advance()
